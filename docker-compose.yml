@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: invicta_gym
+      POSTGRES_USER: ubuntu
+      POSTGRES_PASSWORD: mysecretpassword
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432" # Changed host port to 5434 to avoid conflict with local postgres
+  
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - DB_HOST=db
+      - DB_NAME=invicta_gym
+      - DB_USER=ubuntu
+      - DB_PASSWORD=mysecretpassword
+      - DB_PORT=5432
+    depends_on:
+      - db
+      - tailwind
+
+  tailwind:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: sh -c "npm install && npm run tailwind:watch"
+
+volumes:
+  postgres_data:

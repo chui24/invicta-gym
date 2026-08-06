@@ -1,0 +1,178 @@
+:root {
+    --sidebar-bg: #121212;
+    --main-bg: #0d0d12;
+    --accent-purple: #d500f9; /* Neon Purple */
+    --card-bg: #1e1e24;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0b0;
+    --card-shadow: 0 0 15px rgba(213, 0, 249, 0.15);
+    --border-neon: 1px solid rgba(213, 0, 249, 0.4);
+}
+
+body {
+    background-color: var(--main-bg);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    overflow-x: hidden;
+}
+
+/* Global Dark Mode Overrides for Bootstrap */
+.bg-white, .bg-light {
+    background-color: var(--card-bg) !important;
+}
+.text-dark {
+    color: var(--text-primary) !important;
+}
+.text-muted {
+    color: var(--text-secondary) !important;
+}
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary) !important;
+}
+
+/* Sidebar layout */
+.wrapper {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: var(--sidebar-bg);
+    color: #fff;
+    min-height: 100vh;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    border-right: var(--border-neon);
+    box-shadow: 2px 0 10px rgba(213, 0, 249, 0.1);
+}
+
+.sidebar .brand {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Drop shadow for the logo to make it glow slightly */
+.sidebar .brand img {
+    filter: drop-shadow(0 0 8px rgba(213, 0, 249, 0.6));
+}
+
+.sidebar .nav-link {
+    color: #d1d1d1;
+    padding: 15px 20px;
+    transition: all 0.3s;
+}
+
+.sidebar .nav-link:hover, .sidebar .nav-link.active {
+    color: #fff;
+    background-color: rgba(213, 0, 249, 0.1);
+    border-left: 4px solid var(--accent-purple);
+    text-shadow: 0 0 5px rgba(213,0,249,0.5);
+}
+
+.sidebar .nav-link i {
+    margin-right: 10px;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 30px;
+    overflow-y: auto;
+    transition: all 0.3s ease-in-out;
+}
+
+.sidebar.collapsed {
+    margin-left: -250px;
+}
+
+.menu-toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--accent-purple);
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-right: 15px;
+    text-shadow: 0 0 10px rgba(213, 0, 249, 0.6);
+}
+
+/* Cards */
+.card {
+    border: var(--border-neon);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    background-color: var(--card-bg) !important;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(213, 0, 249, 0.3);
+}
+
+.card-header {
+    background-color: transparent !important;
+    border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+    font-weight: 600;
+}
+
+/* Forms Dark Mode */
+.form-control, .form-select {
+    background-color: #2a2a35 !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    color: var(--text-primary) !important;
+}
+.form-control:focus, .form-select:focus {
+    background-color: #2a2a35 !important;
+    border-color: var(--accent-purple) !important;
+    box-shadow: 0 0 10px rgba(213, 0, 249, 0.5) !important;
+    color: var(--text-primary) !important;
+}
+::placeholder {
+    color: #6c757d !important;
+}
+
+/* Buttons & Accent */
+.btn-primary {
+    background-color: var(--accent-purple);
+    border: 1px solid var(--accent-purple);
+    color: white;
+    box-shadow: 0 0 10px rgba(213, 0, 249, 0.4);
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: transparent;
+    border: 1px solid var(--accent-purple);
+    color: var(--accent-purple);
+    box-shadow: 0 0 20px rgba(213, 0, 249, 0.8) inset, 0 0 15px rgba(213, 0, 249, 0.5);
+}
+
+.text-accent {
+    color: var(--accent-purple) !important;
+    text-shadow: 0 0 8px rgba(213, 0, 249, 0.4);
+}
+
+/* Modals & Tables */
+.modal-content, .table {
+    background-color: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--text-primary);
+    --bs-table-striped-bg: rgba(255,255,255,0.02);
+    --bs-table-hover-bg: rgba(213, 0, 249, 0.1);
+}
+.table td, .table th, .table tr {
+    background-color: transparent !important;
+    color: var(--text-primary) !important;
+    border-color: rgba(255, 255, 255, 0.05);
+}
+.table-hover tbody tr:hover td {
+    background-color: rgba(213, 0, 249, 0.15) !important;
+    color: var(--text-primary) !important;
+}

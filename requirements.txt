@@ -1,0 +1,6 @@
+Django==5.2.16
+Pillow
+psycopg2-binary
+face_recognition
+opencv-python-headless
+numpy

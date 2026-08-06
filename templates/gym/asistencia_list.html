@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Asistencias de Hoy - Invicta Gym{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-white/10 pb-4 gap-4">
+        <h2 class="text-3xl font-bold text-brand-accent m-0" style="text-shadow: 0 0 10px rgba(213,0,249,0.4);">Asistencias de Hoy</h2>
+        <a href="{% url 'dashboard' %}" class="bg-transparent border border-brand-muted hover:border-white text-brand-muted hover:text-white font-bold py-2 px-6 rounded transition-all">
+            Volver al Dashboard
+        </a>
+    </div>
+
+    <div class="bg-brand-card rounded-xl shadow-[0_0_15px_rgba(213,0,249,0.1)] border border-brand-accent/30 overflow-hidden">
+        <div class="p-0">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-brand-bg/50 border-b border-brand-accent/30 text-brand-muted uppercase text-sm">
+                        <tr>
+                            <th class="py-4 px-6 font-semibold">Cliente</th>
+                            <th class="py-4 px-6 font-semibold">Cédula</th>
+                            <th class="py-4 px-6 font-semibold">Hora de Llegada</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-white">
+                        {% for asistencia in asistencias %}
+                        <tr class="border-b border-white/10 hover:bg-white/5 transition-colors">
+                            <td class="py-4 px-6">
+                                <div class="flex items-center">
+                                    {% if asistencia.cliente.foto_perfil %}
+                                    <img src="{{ asistencia.cliente.foto_perfil.url }}" class="rounded-full mr-4 object-cover border-2 border-brand-accent/50" width="45" height="45">
+                                    {% else %}
+                                    <div class="rounded-full bg-black/40 border border-white/10 flex items-center justify-center mr-4" style="width: 45px; height: 45px;">
+                                        <i class="bi bi-person-fill text-brand-muted text-xl"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="m-0 font-bold text-lg">{{ asistencia.cliente.nombre }}</h6>
+                                        <small class="text-brand-muted">{{ asistencia.cliente.correo|default:"Sin correo" }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6 text-brand-muted">{{ asistencia.cliente.cedula }}</td>
+                            <td class="py-4 px-6">
+                                <span class="bg-blue-500/20 text-blue-400 border border-blue-500/50 px-4 py-2 rounded-full text-sm font-semibold shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+                                    <i class="bi bi-clock-history mr-1"></i>
+                                    {{ asistencia.fecha_hora_entrada|date:"h:i A" }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-12 text-brand-muted">
+                                <i class="bi bi-inbox text-5xl block mb-4 opacity-50"></i>
+                                No hay asistencias registradas el día de hoy.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

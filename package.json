@@ -1,0 +1,17 @@
+{
+  "name": "invicta_gym",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tailwind:watch": "tailwindcss -i ./static/css/tailwind_input.css -o ./static/css/tailwind_output.css --watch",
+    "tailwind:build": "tailwindcss -i ./static/css/tailwind_input.css -o ./static/css/tailwind_output.css --minify"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "tailwindcss": "^3.4.1"
+  }
+}
