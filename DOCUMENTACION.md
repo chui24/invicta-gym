@@ -127,3 +127,14 @@ Se implementaron los módulos administrativos iniciales para robustecer el contr
 *   **Lógica Inteligente de Barras de Progreso:**
     *   Se solucionó el desbordamiento de las barras de progreso cuando un cliente acumulaba pagos (días apilados). 
     *   El método `@property porcentaje_tiempo` en `Suscripcion` ahora calcula dinámicamente el progreso **basándose en la fecha del último pago**, asegurando que la barra represente visualmente la duración real y restante del ciclo pagado más reciente, logrando que inicie al 100% y se reduzca suavemente.
+
+### Fase 2: Automatización Financiera (BCV) y Feedback Auditivo
+Se optimizó la experiencia del usuario y se redujo la carga manual de cálculos financieros:
+
+*   **Integración Auditiva en Semáforo Biométrico:**
+    *   **Lógica Frontend:** Se incorporó un sistema de precarga de audios en `dashboard.js`. Al escanear a un **cliente**, el sistema evalúa su `estado` devuelto por el backend (`Activo`, `Alerta`, `Inactivo`) y dispara automáticamente un mensaje de voz personalizado.
+    *   **Control de Superposición:** Se implementó una función `detenerAudios()` que pausa y reinicia cualquier audio reproduciéndose antes de lanzar uno nuevo, evitando caos sonoro en recepciones concurridas. *El staff fue excluido de reproducir audios.*
+*   **Gestor Autónomo de Tasa BCV:**
+    *   **Scraper Inteligente:** Se desarrolló un script en `utils/bcv_scraper.py` (usando `BeautifulSoup` y `requests`) que extrae la tasa oficial del día directamente desde `bcv.org.ve`, tolerando fallos de SSL del servidor gubernamental.
+    *   **Persistencia:** La tasa extraída se inyecta en el patrón Singleton del modelo `ConfiguracionSistema`. Además, se creó el comando administrativo `python manage.py actualizar_bcv` para que pueda ser ejecutado vía Cron-job diariamente.
+    *   **Calculadora Dinámica (UI):** En la vista de Renovación (`renovacion_form.html`), se inyectaron los precios en USD desde el backend mediante un diccionario JSON. Una función en JavaScript detecta en tiempo real los cambios del `select` de Planes y multiplica la tarifa por la `tasa_bcv` actual, mostrando al recepcionista instantáneamente el *Total a Pagar en Bs* de forma clara con un diseño *Glow*.

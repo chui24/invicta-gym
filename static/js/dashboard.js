@@ -2,7 +2,7 @@
 const audios_feedback = {
     'Activo': new Audio(encodeURI('/static/audios/bienvenida_al_gym.mp3')),
     'Alerta': new Audio(encodeURI('/static/audios/(recordatorio de pago).mp3')),
-    'Inactivo': new Audio(encodeURI('/static/audios/(pago vencido).mp3'))
+    'Inactivo': new Audio(encodeURI('/static/audios/nanutria_audio.mp3'))
 };
 
 function detenerAudios() {
