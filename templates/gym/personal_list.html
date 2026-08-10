@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-white mb-2">Directorio de Personal</h1>
+            <p class="text-brand-muted">Gestión de entrenadores y staff del gimnasio.</p>
+        </div>
+        <a href="{% url 'personal_crear' %}" class="bg-brand-accent hover:bg-brand-accent/80 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-[0_0_15px_rgba(213,0,249,0.4)] hover:shadow-[0_0_25px_rgba(213,0,249,0.6)]">
+            + Registrar Staff
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for miembro in personal %}
+        <div class="bg-black/30 backdrop-blur-2xl rounded-2xl p-6 border border-white/10 hover:border-brand-accent/50 transition-all shadow-lg hover:shadow-[0_0_30px_rgba(213,0,249,0.15)] group relative overflow-hidden">
+            <!-- Glow effect on hover -->
+            <div class="absolute -inset-1 bg-gradient-to-r from-brand-accent to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-500 -z-10"></div>
+            
+            <div class="flex items-center space-x-4 mb-4">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 border border-white/20 flex items-center justify-center flex-shrink-0">
+                    <span class="text-white font-bold text-lg">{{ miembro.nombre_completo|slice:":1"|upper }}</span>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-white leading-tight">{{ miembro.nombre_completo }}</h2>
+                    <span class="text-xs font-medium px-2 py-1 rounded-full bg-brand-accent/20 text-brand-accent border border-brand-accent/30 inline-block mt-1">{{ miembro.cargo_especialidad }}</span>
+                </div>
+            </div>
+            
+            <div class="space-y-2 mb-6 text-sm">
+                <div class="flex items-center text-brand-muted">
+                    <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Turno: <span class="text-gray-300 ml-1 font-medium">{{ miembro.turno }}</span>
+                </div>
+                {% if miembro.telefono %}
+                <div class="flex items-center text-brand-muted">
+                    <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                    {{ miembro.telefono }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="flex space-x-2 border-t border-white/10 pt-4">
+                <a href="{% url 'personal_editar' miembro.id %}" class="flex-1 text-center bg-white/5 hover:bg-white/10 text-white text-sm font-medium py-2 rounded-lg transition-colors border border-white/5">Editar</a>
+                <a href="{% url 'personal_eliminar' miembro.id %}" class="flex-1 text-center bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-medium py-2 rounded-lg transition-colors border border-red-500/20">Eliminar</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <p class="text-brand-muted text-lg">No hay personal registrado en el directorio.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

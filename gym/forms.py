@@ -1,5 +1,5 @@
 from django import forms
-from .models import Cliente, Plan, Pago
+from .models import Cliente, Plan, Pago, Personal
 from django.utils import timezone
 
 TW_INPUT_CLASS = 'w-full bg-black/60 border border-brand-accent/40 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent focus:shadow-[0_0_20px_rgba(213,0,249,0.5)] transition-all shadow-inner placeholder-brand-muted/50'
@@ -66,3 +66,23 @@ class ClienteEditForm(forms.ModelForm):
             'telefono': forms.TextInput(attrs={'class': TW_INPUT_CLASS}),
         }
 
+class PlanForm(forms.ModelForm):
+    class Meta:
+        model = Plan
+        fields = ['nombre', 'duracion_dias', 'tarifa']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': TW_INPUT_CLASS, 'placeholder': 'Ej. Mensualidad'}),
+            'duracion_dias': forms.NumberInput(attrs={'class': TW_INPUT_CLASS, 'placeholder': 'Ej. 30'}),
+            'tarifa': forms.NumberInput(attrs={'class': TW_INPUT_CLASS, 'placeholder': 'Ej. 25.00', 'step': '0.01'}),
+        }
+
+class PersonalForm(forms.ModelForm):
+    class Meta:
+        model = Personal
+        fields = ['nombre_completo', 'cargo_especialidad', 'turno', 'telefono']
+        widgets = {
+            'nombre_completo': forms.TextInput(attrs={'class': TW_INPUT_CLASS, 'placeholder': 'Ej. María Pérez'}),
+            'cargo_especialidad': forms.Select(attrs={'class': TW_SELECT_CLASS}),
+            'turno': forms.Select(attrs={'class': TW_SELECT_CLASS}),
+            'telefono': forms.TextInput(attrs={'class': TW_INPUT_CLASS, 'placeholder': 'Ej. 0412-1234567'}),
+        }

@@ -12,8 +12,8 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Count, Q
 
-from .models import Cliente, Asistencia, ConfiguracionSistema, Suscripcion, Pago, Plan
-from .forms import RegistroClienteForm, RenovacionForm, ClienteEditForm
+from .models import Cliente, Asistencia, ConfiguracionSistema, Suscripcion, Pago, Plan, Personal
+from .forms import RegistroClienteForm, RenovacionForm, ClienteEditForm, PlanForm, PersonalForm
 
 def get_face_encoding_from_base64(imgstr):
     try:
@@ -324,6 +324,76 @@ def asistencia_list(request):
     hoy = timezone.now().date()
     asistencias = Asistencia.objects.filter(fecha_hora_entrada__date=hoy).order_by('-fecha_hora_entrada')
     return render(request, 'gym/asistencia_list.html', {'asistencias': asistencias})
+
+# ==========================================
+# GESTIÓN DE PLANES (CRUD)
+# ==========================================
+def plan_list(request):
+    planes = Plan.objects.all().order_by('tarifa')
+    return render(request, 'gym/plan_list.html', {'planes': planes})
+
+def plan_crear(request):
+    if request.method == 'POST':
+        form = PlanForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('plan_list')
+    else:
+        form = PlanForm()
+    return render(request, 'gym/plan_form.html', {'form': form, 'titulo': 'Crear Nuevo Plan'})
+
+def plan_editar(request, pk):
+    plan = get_object_or_404(Plan, pk=pk)
+    if request.method == 'POST':
+        form = PlanForm(request.POST, instance=plan)
+        if form.is_valid():
+            form.save()
+            return redirect('plan_list')
+    else:
+        form = PlanForm(instance=plan)
+    return render(request, 'gym/plan_form.html', {'form': form, 'titulo': 'Editar Plan'})
+
+def plan_eliminar(request, pk):
+    plan = get_object_or_404(Plan, pk=pk)
+    if request.method == 'POST':
+        plan.delete()
+        return redirect('plan_list')
+    return render(request, 'gym/plan_confirm_delete.html', {'plan': plan})
+
+# ==========================================
+# GESTIÓN DE PERSONAL (CRUD)
+# ==========================================
+def personal_list(request):
+    personal = Personal.objects.all().order_by('cargo_especialidad', 'nombre_completo')
+    return render(request, 'gym/personal_list.html', {'personal': personal})
+
+def personal_crear(request):
+    if request.method == 'POST':
+        form = PersonalForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('personal_list')
+    else:
+        form = PersonalForm()
+    return render(request, 'gym/personal_form.html', {'form': form, 'titulo': 'Registrar Personal'})
+
+def personal_editar(request, pk):
+    miembro = get_object_or_404(Personal, pk=pk)
+    if request.method == 'POST':
+        form = PersonalForm(request.POST, instance=miembro)
+        if form.is_valid():
+            form.save()
+            return redirect('personal_list')
+    else:
+        form = PersonalForm(instance=miembro)
+    return render(request, 'gym/personal_form.html', {'form': form, 'titulo': 'Editar Personal'})
+
+def personal_eliminar(request, pk):
+    miembro = get_object_or_404(Personal, pk=pk)
+    if request.method == 'POST':
+        miembro.delete()
+        return redirect('personal_list')
+    return render(request, 'gym/personal_confirm_delete.html', {'miembro': miembro})
 
 from django.views.decorators.csrf import csrf_exempt
 

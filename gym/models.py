@@ -126,3 +126,26 @@ class Asistencia(models.Model):
 
     def __str__(self):
         return f"Asistencia: {self.cliente.nombre} - {self.fecha_hora_entrada.strftime('%Y-%m-%d %H:%M')}"
+
+class Personal(models.Model):
+    TURNO_CHOICES = [
+        ('Mañana', 'Mañana'),
+        ('Tarde', 'Tarde'),
+        ('Noche', 'Noche'),
+    ]
+    
+    CARGO_CHOICES = [
+        ('Entrenador', 'Entrenador'),
+        ('Recepcionista', 'Recepcionista'),
+        ('Mantenimiento', 'Mantenimiento'),
+        ('Gerencia', 'Gerencia'),
+        ('Otro', 'Otro'),
+    ]
+
+    nombre_completo = models.CharField(max_length=150)
+    cargo_especialidad = models.CharField(max_length=50, choices=CARGO_CHOICES, default='Entrenador')
+    turno = models.CharField(max_length=20, choices=TURNO_CHOICES, default='Mañana')
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nombre_completo} - {self.cargo_especialidad}"
