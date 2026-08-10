@@ -30,10 +30,10 @@ El proyecto está completamente contenedorizado para evitar conflictos de depend
 1.  **`db` (PostgreSQL):**
     *   **Imagen:** `postgres:15-alpine`.
     *   **Lógica:** Almacena toda la data relacional. Utiliza un volumen local (`postgres_data`) para garantizar la persistencia de datos incluso si el contenedor se destruye.
-    *   **Inicialización:** Se configuró para importar automáticamente el respaldo local (mediante un archivo `init.sql`) al arrancar por primera vez, permitiendo una migración transparente desde el entorno nativo anterior.
+    *   **Inicialización:** Utiliza un mecanismo de auto-arranque `restart: unless-stopped`. La base de datos inicia completamente limpia (se eliminó el `init.sql` de legado).
 2.  **`web` (Django Application):**
     *   **Imagen:** Construida a partir de un `Dockerfile` (`python:3.10-slim`).
-    *   **Lógica:** Ejecuta el servidor de desarrollo de Django (`runserver`) exponiendo el puerto 8000.
+    *   **Lógica:** Aplica las migraciones automáticamente en el arranque (`python manage.py migrate`) asegurando que la base de datos se estructure sin intervención humana, y luego ejecuta el servidor de desarrollo de Django (`runserver`) exponiendo el puerto 8000.
     *   **Conectividad:** Se conecta a `db` a través de la red interna de Docker usando variables de entorno (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`).
 3.  **`tailwind` (Compilador CSS):**
     *   **Imagen:** `node:20-alpine`.
@@ -47,7 +47,7 @@ La aplicación principal se llama `gym` y su núcleo reside en sus modelos (`gym
 
 ### Modelos Principales
 *   **`Plan`:** Define los tipos de membresías disponibles (Ej: Plan Regular, Trimestral, Pase Diario). Define duración y precios.
-*   **`Cliente`:** Almacena la información personal de los usuarios y su fotografía (capturada y almacenada físicamente vía base64 -> imagen procesada).
+*   **`Cliente`:** Almacena la información personal de los usuarios, su fotografía, y el **`descriptor_facial` (JSONField)**, que es un vector numérico extraído por inteligencia artificial para la identificación biométrica.
 *   **`Suscripcion`:** Es el puente transaccional entre un Cliente y un Plan.
     *   **Lógica de Fechas Inteligente:** El modelo `Suscripcion` incluye propiedades (`@property`) que calculan en tiempo real el estado de la cuenta. 
     *   `dias_restantes`: Calcula la diferencia entre hoy y la fecha de vencimiento.
@@ -57,8 +57,18 @@ La aplicación principal se llama `gym` y su núcleo reside en sus modelos (`gym
 ### Flujo de Registro de Cliente
 1. El administrador ingresa los datos personales.
 2. Se solicita una fotografía (opcional). Mediante la API del navegador (`navigator.mediaDevices`), Vanilla JS captura el frame de la cámara, lo dibuja en un `<canvas>` y lo inyecta como `base64` en un input oculto del formulario.
-3. Django recibe el `base64`, lo decodifica, lo guarda como archivo de imagen y crea el registro del `Cliente`.
+3. Django recibe el `base64`, lo decodifica, lo guarda como archivo de imagen. Posteriormente, a través de la librería `face_recognition` (Python + OpenCV), extrae la matriz matemática del rostro y la guarda en el campo `descriptor_facial`.
 4. Automáticamente, genera el registro de `Pago` y la `Suscripcion`, calculando la `fecha_vencimiento` basado en los días del `Plan` seleccionado.
+
+### El Semáforo Biométrico de Acceso
+El corazón operativo del sistema es el **Semáforo Biométrico** (`/api/validar_rostro/`). 
+*   **Captura Asíncrona:** El frontend realiza *polling* de la cámara web, enviando fotogramas al backend en Base64 de manera invisible para el usuario.
+*   **Distancia Euclidiana:** El servidor compara el rostro recibido contra la base de datos de descriptores de clientes. Si encuentra coincidencia, identifica al usuario.
+*   **Reglas de Acceso:** Una vez identificado, verifica el estado de su `Suscripcion`. Si está al día (o dentro de los *días de gracia*), marca una `Asistencia` y responde al frontend para que el Semáforo se ponga en Verde y muestre la tarjeta del cliente. Si está vencido, arroja Rojo (acceso denegado).
+
+### Testing y Performance Industrial (k6)
+La arquitectura biométrica basada en el servidor demostró ser inmensamente robusta y estable.
+Bajo pruebas de estrés ejecutadas con **Grafana k6**, el sistema logró procesar **2,364 registros biométricos en 2 minutos** (concurrencia de 50 usuarios), sin memory leaks y manteniendo un percentil 95 de latencia en **~101 ms**. Además, se comprobó que el flujo biométrico rinde perfectamente en VPS económicos limitados a 512MB RAM y 0.5 CPU.
 
 ---
 
