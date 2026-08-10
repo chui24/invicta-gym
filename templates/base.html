@@ -29,6 +29,16 @@
                         <i class="bi bi-people-fill mr-3"></i> Clientes
                     </a>
                 </li>
+                <li class="w-full">
+                    <a class="flex items-center px-5 py-4 text-[#d1d1d1] transition-all duration-300 hover:text-white hover:bg-brand-accent/10 hover:border-l-4 hover:border-brand-accent hover:shadow-[0_0_5px_rgba(213,0,249,0.5)] {% if 'plan' in request.resolver_match.url_name %}text-white bg-brand-accent/10 border-l-4 border-brand-accent shadow-[0_0_5px_rgba(213,0,249,0.5)]{% else %}border-l-4 border-transparent{% endif %}" href="{% url 'plan_list' %}">
+                        <i class="bi bi-card-checklist mr-3"></i> Planes
+                    </a>
+                </li>
+                <li class="w-full">
+                    <a class="flex items-center px-5 py-4 text-[#d1d1d1] transition-all duration-300 hover:text-white hover:bg-brand-accent/10 hover:border-l-4 hover:border-brand-accent hover:shadow-[0_0_5px_rgba(213,0,249,0.5)] {% if 'personal' in request.resolver_match.url_name %}text-white bg-brand-accent/10 border-l-4 border-brand-accent shadow-[0_0_5px_rgba(213,0,249,0.5)]{% else %}border-l-4 border-transparent{% endif %}" href="{% url 'personal_list' %}">
+                        <i class="bi bi-person-badge-fill mr-3"></i> Staff
+                    </a>
+                </li>
             </ul>
         </nav>
 
