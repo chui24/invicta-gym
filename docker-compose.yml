@@ -3,6 +3,7 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: invicta_gym
       POSTGRES_USER: ubuntu
@@ -12,10 +13,13 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5434:5432" # Changed host port to 5434 to avoid conflict with local postgres
-  
+
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
     ports:
