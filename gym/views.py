@@ -529,9 +529,15 @@ def validar_rostro(request):
                 
                 # Lógica del Semáforo
                 if hoy <= vencimiento:
-                    estado_color = 'Verde'
-                    estado = 'Activo'
-                    mensaje = 'Acceso Permitido'
+                    # Si faltan 3 días o menos, lanzar pre-alerta de renovación
+                    if (vencimiento - hoy).days <= 3:
+                        estado_color = 'Amarillo'
+                        estado = 'Alerta'
+                        mensaje = f'Acceso Permitido. Recuerde que su plan vence en {(vencimiento - hoy).days} días.'
+                    else:
+                        estado_color = 'Verde'
+                        estado = 'Activo'
+                        mensaje = 'Acceso Permitido'
                     registrar_asistencia = True
                 elif hoy <= limite_gracia:
                     estado_color = 'Amarillo'
