@@ -57,13 +57,17 @@ class Suscripcion(models.Model):
 
     @property
     def porcentaje_tiempo(self):
-        if not self.fecha_vencimiento or not self.fecha_inscripcion:
+        if not self.fecha_vencimiento or not getattr(self, 'plan', None) or self.plan.duracion_dias <= 0:
             return 0
-        total_dias = (self.fecha_vencimiento - self.fecha_inscripcion).days
-        if total_dias <= 0:
-            return 0
-        dias_pasados = (timezone.now().date() - self.fecha_inscripcion).days
-        porcentaje_restante = 100 - ((dias_pasados / total_dias) * 100)
+        
+        total_dias = self.plan.duracion_dias
+        dias_rest = self.dias_restantes
+        
+        if dias_rest > total_dias:
+            porcentaje_restante = 100
+        else:
+            porcentaje_restante = (dias_rest / total_dias) * 100
+            
         return max(0, min(100, int(porcentaje_restante)))
 
     def __str__(self):
