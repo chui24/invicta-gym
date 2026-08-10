@@ -214,22 +214,22 @@
                                 </div>
                                 
                                 <div class="space-y-3 mb-8">
-                                    <p class="text-brand-muted text-base m-0 flex"><span class="opacity-70 w-28 inline-block">Status:</span> <span id="val_estado" class="text-white font-medium tracking-wide">-</span></p>
-                                    <p class="text-brand-muted text-base m-0 flex"><span class="opacity-70 w-28 inline-block">Plan:</span> <span id="val_plan" class="text-white font-medium tracking-wide">-</span></p>
-                                    <p class="text-brand-muted text-base m-0 flex"><span class="opacity-70 w-28 inline-block">Expires:</span> <span id="val_vencimiento" class="text-white font-medium tracking-wide">-</span></p>
+                                    <p class="text-brand-muted text-base m-0 flex"><span class="opacity-70 w-28 inline-block">Estado:</span> <span id="val_estado" class="text-white font-medium tracking-wide">-</span></p>
+                                    <p class="text-brand-muted text-base m-0 flex"><span id="val_plan_label" class="opacity-70 w-28 inline-block">Rol / Plan:</span> <span id="val_plan" class="text-white font-medium tracking-wide">-</span></p>
+                                    <p id="val_vence_container" class="text-brand-muted text-base m-0 flex"><span class="opacity-70 w-28 inline-block">Vence:</span> <span id="val_vencimiento" class="text-white font-medium tracking-wide">-</span></p>
                                 </div>
 
                                 <!-- Botones de Acción (Estilo Imagen 1) -->
-                                <div class="flex flex-wrap gap-4 mt-auto">
+                                <div class="flex flex-wrap gap-4 mt-auto" id="botones_accion_container">
                                     <div id="renovar_container" class="hidden">
                                         <a id="btn_renovar" href="#" class="bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_15px_rgba(220,38,38,0.4)] hover:shadow-[0_0_25px_rgba(220,38,38,0.6)] transition-all inline-block uppercase text-sm tracking-wider">
                                             Renovar Plan
                                         </a>
                                     </div>
-                                    <button class="bg-brand-accent hover:bg-[#b000cc] text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_15px_rgba(213,0,249,0.4)] hover:shadow-[0_0_25px_rgba(213,0,249,0.6)] transition-all uppercase text-sm tracking-wider cursor-help" title="Fase 2">
+                                    <button id="btn_routine" class="bg-brand-accent hover:bg-[#b000cc] text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_15px_rgba(213,0,249,0.4)] hover:shadow-[0_0_25px_rgba(213,0,249,0.6)] transition-all uppercase text-sm tracking-wider cursor-help" title="Fase 2">
                                         Routine
                                     </button>
-                                    <button class="bg-brand-accent hover:bg-[#b000cc] text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_15px_rgba(213,0,249,0.4)] hover:shadow-[0_0_25px_rgba(213,0,249,0.6)] transition-all uppercase text-sm tracking-wider cursor-help" title="Fase 2">
+                                    <button id="btn_diet" class="bg-brand-accent hover:bg-[#b000cc] text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_15px_rgba(213,0,249,0.4)] hover:shadow-[0_0_25px_rgba(213,0,249,0.6)] transition-all uppercase text-sm tracking-wider cursor-help" title="Fase 2">
                                         Diet
                                     </button>
                                 </div>

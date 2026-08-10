@@ -48,10 +48,13 @@ function mostrarPerfil(data) {
             nofoto.style.display = 'block';
         }
         
-        if (data.cliente.id) {
+        if (data.cliente.id && data.tipo !== 'staff') {
             document.getElementById('btn_renovar').href = `/cliente/renovar/${data.cliente.id}/`;
             document.getElementById('renovar_container').style.display = 'block';
             document.getElementById('renovar_container').classList.remove('hidden');
+        } else {
+            document.getElementById('renovar_container').style.display = 'none';
+            document.getElementById('renovar_container').classList.add('hidden');
         }
     } else {
         document.getElementById('val_nombre').textContent = 'Desconocido';
@@ -61,6 +64,24 @@ function mostrarPerfil(data) {
         document.getElementById('renovar_container').style.display = 'none';
         document.getElementById('renovar_container').classList.add('hidden');
     }
+
+    const btnRoutine = document.getElementById('btn_routine');
+    const btnDiet = document.getElementById('btn_diet');
+    const venceContainer = document.getElementById('val_vence_container');
+    const planLabel = document.getElementById('val_plan_label');
+
+    if (data.tipo === 'staff') {
+        if (planLabel) planLabel.textContent = 'Rol:';
+        if (venceContainer) venceContainer.style.display = 'none';
+        if (btnRoutine) btnRoutine.style.display = 'none';
+        if (btnDiet) btnDiet.style.display = 'none';
+    } else {
+        if (planLabel) planLabel.textContent = 'Plan:';
+        if (venceContainer) venceContainer.style.display = 'flex';
+        if (btnRoutine) btnRoutine.style.display = 'block';
+        if (btnDiet) btnDiet.style.display = 'block';
+    }
+
     
     if (data.suscripcion) {
         document.getElementById('val_plan').textContent = data.suscripcion.plan;
@@ -83,12 +104,12 @@ function mostrarPerfil(data) {
     document.getElementById('val_estado').textContent = data.estado || 'Inactivo';
     statusIcon.classList.remove('hidden');
     
-    if (data.estado === 'Verde') {
+    if (data.estado_color === 'Verde') {
         card.classList.add('border-green-500');
         statusIcon.classList.add('bg-green-500/20', 'text-green-500', 'border-green-500');
         statusIcon.innerHTML = '<i class="bi bi-check-lg text-2xl"></i>';
         msgEl.className = 'font-bold text-lg m-0 drop-shadow-md text-green-400';
-    } else if (data.estado === 'Amarillo') {
+    } else if (data.estado_color === 'Amarillo') {
         card.classList.add('border-yellow-500');
         statusIcon.classList.add('bg-yellow-500/20', 'text-yellow-500', 'border-yellow-500');
         statusIcon.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-xl"></i>';

@@ -474,7 +474,9 @@ def validar_rostro(request):
                 Asistencia.objects.create(personal=mejor_match)
                 return JsonResponse({
                     'status': 'success',
-                    'estado': 'Verde',
+                    'tipo': 'staff',
+                    'estado_color': 'Verde',
+                    'estado': 'Activo',
                     'mensaje': f'Bienvenida al equipo, {mejor_match.nombre_completo}',
                     'cliente': {
                         'id': mejor_match.id,
@@ -483,7 +485,7 @@ def validar_rostro(request):
                         'foto': mejor_match.foto_perfil.url if mejor_match.foto_perfil else None
                     },
                     'suscripcion': {
-                        'plan': 'Equipo',
+                        'plan': mejor_match.cargo_especialidad,
                         'fecha_inscripcion': 'N/A',
                         'fecha_vencimiento': 'N/A',
                         'metodo_pago_usual': 'N/A',
@@ -498,8 +500,10 @@ def validar_rostro(request):
                 if not suscripcion or not suscripcion.fecha_vencimiento:
                     return JsonResponse({
                         'status': 'success',
+                        'tipo': 'cliente',
                         'error': 'El cliente no tiene suscripciones activas', 
-                        'estado': 'Rojo',
+                        'estado_color': 'Rojo',
+                        'estado': 'Inactivo',
                         'cliente': {
                             'id': mejor_cliente.id,
                             'nombre': mejor_cliente.nombre,
@@ -519,15 +523,18 @@ def validar_rostro(request):
                 
                 # Lógica del Semáforo
                 if hoy <= vencimiento:
-                    estado = 'Verde'
+                    estado_color = 'Verde'
+                    estado = 'Activo'
                     mensaje = 'Acceso Permitido'
                     registrar_asistencia = True
                 elif hoy <= limite_gracia:
-                    estado = 'Amarillo'
+                    estado_color = 'Amarillo'
+                    estado = 'Alerta'
                     mensaje = f'Alerta: Mensualidad vencida. En periodo de gracia ({dias_gracia} días).'
                     registrar_asistencia = True
                 else:
-                    estado = 'Rojo'
+                    estado_color = 'Rojo'
+                    estado = 'Inactivo'
                     mensaje = 'Acceso Denegado: Superó los días de gracia, exige pago.'
                     registrar_asistencia = False
                     
@@ -539,6 +546,8 @@ def validar_rostro(request):
                 
                 data = {
                     'status': 'success',
+                    'tipo': 'cliente',
+                    'estado_color': estado_color,
                     'estado': estado,
                     'mensaje': mensaje,
                     'cliente': {
