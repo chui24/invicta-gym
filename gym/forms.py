@@ -77,6 +77,8 @@ class PlanForm(forms.ModelForm):
         }
 
 class PersonalForm(forms.ModelForm):
+    foto_base64 = forms.CharField(widget=forms.HiddenInput(), required=False)
+
     class Meta:
         model = Personal
         fields = ['nombre_completo', 'cargo_especialidad', 'turno', 'telefono']

@@ -27,20 +27,40 @@
                         <tr class="border-b border-white/10 hover:bg-white/5 transition-colors">
                             <td class="py-4 px-6">
                                 <div class="flex items-center">
-                                    {% if asistencia.cliente.foto_perfil %}
-                                    <img src="{{ asistencia.cliente.foto_perfil.url }}" class="rounded-full mr-4 object-cover border-2 border-brand-accent/50" width="45" height="45">
-                                    {% else %}
-                                    <div class="rounded-full bg-black/40 border border-white/10 flex items-center justify-center mr-4" style="width: 45px; height: 45px;">
-                                        <i class="bi bi-person-fill text-brand-muted text-xl"></i>
-                                    </div>
+                                    {% if asistencia.cliente %}
+                                        {% if asistencia.cliente.foto_perfil %}
+                                        <img src="{{ asistencia.cliente.foto_perfil.url }}" class="rounded-full mr-4 object-cover border-2 border-brand-accent/50" width="45" height="45">
+                                        {% else %}
+                                        <div class="rounded-full bg-black/40 border border-white/10 flex items-center justify-center mr-4" style="width: 45px; height: 45px;">
+                                            <i class="bi bi-person-fill text-brand-muted text-xl"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="m-0 font-bold text-lg">{{ asistencia.cliente.nombre }} <span class="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-brand-accent/20 text-brand-accent border border-brand-accent/30 inline-block align-middle">Cliente</span></h6>
+                                            <small class="text-brand-muted">{{ asistencia.cliente.correo|default:"Sin correo" }}</small>
+                                        </div>
+                                    {% elif asistencia.personal %}
+                                        {% if asistencia.personal.foto_perfil %}
+                                        <img src="{{ asistencia.personal.foto_perfil.url }}" class="rounded-full mr-4 object-cover border-2 border-green-500/50" width="45" height="45">
+                                        {% else %}
+                                        <div class="rounded-full bg-black/40 border border-white/10 flex items-center justify-center mr-4" style="width: 45px; height: 45px;">
+                                            <i class="bi bi-person-badge-fill text-brand-muted text-xl"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="m-0 font-bold text-lg">{{ asistencia.personal.nombre_completo }} <span class="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 inline-block align-middle">Staff</span></h6>
+                                            <small class="text-brand-muted">{{ asistencia.personal.cargo_especialidad }} - Turno: {{ asistencia.personal.turno }}</small>
+                                        </div>
                                     {% endif %}
-                                    <div>
-                                        <h6 class="m-0 font-bold text-lg">{{ asistencia.cliente.nombre }}</h6>
-                                        <small class="text-brand-muted">{{ asistencia.cliente.correo|default:"Sin correo" }}</small>
-                                    </div>
                                 </div>
                             </td>
-                            <td class="py-4 px-6 text-brand-muted">{{ asistencia.cliente.cedula }}</td>
+                            <td class="py-4 px-6 text-brand-muted">
+                                {% if asistencia.cliente %}
+                                    {{ asistencia.cliente.cedula }}
+                                {% else %}
+                                    <span class="text-gray-500 italic">N/A</span>
+                                {% endif %}
+                            </td>
                             <td class="py-4 px-6">
                                 <span class="bg-blue-500/20 text-blue-400 border border-blue-500/50 px-4 py-2 rounded-full text-sm font-semibold shadow-[0_0_10px_rgba(59,130,246,0.3)]">
                                     <i class="bi bi-clock-history mr-1"></i>

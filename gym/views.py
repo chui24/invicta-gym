@@ -371,8 +371,24 @@ def personal_crear(request):
     if request.method == 'POST':
         form = PersonalForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('personal_list')
+            try:
+                with transaction.atomic():
+                    miembro = form.save(commit=False)
+                    foto_base64 = form.cleaned_data.get('foto_base64')
+                    if foto_base64:
+                        format, imgstr = foto_base64.split(';base64,') 
+                        ext = format.split('/')[-1] 
+                        data = ContentFile(base64.b64decode(imgstr), name=f'{miembro.nombre_completo.replace(" ", "_")}.{ext}')
+                        miembro.foto_perfil = data
+                        
+                        descriptor = get_face_encoding_from_base64(imgstr)
+                        if descriptor:
+                            miembro.descriptor_facial = descriptor
+                            
+                    miembro.save()
+                    return redirect('personal_list')
+            except Exception as e:
+                form.add_error(None, f"Error al registrar: {str(e)}")
     else:
         form = PersonalForm()
     return render(request, 'gym/personal_form.html', {'form': form, 'titulo': 'Registrar Personal'})
@@ -382,8 +398,24 @@ def personal_editar(request, pk):
     if request.method == 'POST':
         form = PersonalForm(request.POST, instance=miembro)
         if form.is_valid():
-            form.save()
-            return redirect('personal_list')
+            try:
+                with transaction.atomic():
+                    miembro = form.save(commit=False)
+                    foto_base64 = form.cleaned_data.get('foto_base64')
+                    if foto_base64:
+                        format, imgstr = foto_base64.split(';base64,') 
+                        ext = format.split('/')[-1] 
+                        data = ContentFile(base64.b64decode(imgstr), name=f'{miembro.nombre_completo.replace(" ", "_")}.{ext}')
+                        miembro.foto_perfil = data
+                        
+                        descriptor = get_face_encoding_from_base64(imgstr)
+                        if descriptor:
+                            miembro.descriptor_facial = descriptor
+                            
+                    miembro.save()
+                    return redirect('personal_list')
+            except Exception as e:
+                form.add_error(None, f"Error al editar: {str(e)}")
     else:
         form = PersonalForm(instance=miembro)
     return render(request, 'gym/personal_form.html', {'form': form, 'titulo': 'Editar Personal'})
@@ -414,9 +446,11 @@ def validar_rostro(request):
                 
             # Buscar coincidencia en la DB
             clientes = Cliente.objects.exclude(descriptor_facial__isnull=True).exclude(descriptor_facial='')
+            personal_staff = Personal.objects.exclude(descriptor_facial__isnull=True).exclude(descriptor_facial='')
             
-            mejor_cliente = None
+            mejor_match = None
             menor_distancia = 0.5  # Tolerancia
+            tipo_match = None
             
             for cliente in clientes:
                 if cliente.descriptor_facial:
@@ -424,9 +458,40 @@ def validar_rostro(request):
                     distancia = face_recognition.face_distance([db_encoding], np.array(encodings_detectados))[0]
                     if distancia < menor_distancia:
                         menor_distancia = distancia
-                        mejor_cliente = cliente
+                        mejor_match = cliente
+                        tipo_match = 'cliente'
                         
-            if mejor_cliente:
+            for staff in personal_staff:
+                if staff.descriptor_facial:
+                    db_encoding = np.array(staff.descriptor_facial)
+                    distancia = face_recognition.face_distance([db_encoding], np.array(encodings_detectados))[0]
+                    if distancia < menor_distancia:
+                        menor_distancia = distancia
+                        mejor_match = staff
+                        tipo_match = 'staff'
+                        
+            if mejor_match and tipo_match == 'staff':
+                Asistencia.objects.create(personal=mejor_match)
+                return JsonResponse({
+                    'status': 'success',
+                    'estado': 'Verde',
+                    'mensaje': f'Bienvenida al equipo, {mejor_match.nombre_completo}',
+                    'cliente': {
+                        'id': mejor_match.id,
+                        'nombre': mejor_match.nombre_completo,
+                        'cedula': mejor_match.cargo_especialidad,
+                        'foto': mejor_match.foto_perfil.url if mejor_match.foto_perfil else None
+                    },
+                    'suscripcion': {
+                        'plan': 'Staff',
+                        'fecha_inscripcion': 'N/A',
+                        'fecha_vencimiento': 'N/A',
+                        'metodo_pago_usual': 'N/A',
+                    }
+                })
+                        
+            elif mejor_match and tipo_match == 'cliente':
+                mejor_cliente = mejor_match
                 # Obtener la última suscripción
                 suscripcion = mejor_cliente.suscripciones.order_by('-fecha_vencimiento').first()
                 

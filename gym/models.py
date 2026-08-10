@@ -121,11 +121,16 @@ class ConfiguracionSistema(models.Model):
         return config
 
 class Asistencia(models.Model):
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='asistencias')
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='asistencias', null=True, blank=True)
+    personal = models.ForeignKey('Personal', on_delete=models.CASCADE, related_name='asistencias', null=True, blank=True)
     fecha_hora_entrada = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Asistencia: {self.cliente.nombre} - {self.fecha_hora_entrada.strftime('%Y-%m-%d %H:%M')}"
+        if self.cliente:
+            return f"Asistencia Cliente: {self.cliente.nombre} - {self.fecha_hora_entrada.strftime('%Y-%m-%d %H:%M')}"
+        elif self.personal:
+            return f"Asistencia Staff: {self.personal.nombre_completo} - {self.fecha_hora_entrada.strftime('%Y-%m-%d %H:%M')}"
+        return f"Asistencia Desconocida - {self.fecha_hora_entrada.strftime('%Y-%m-%d %H:%M')}"
 
 class Personal(models.Model):
     TURNO_CHOICES = [
@@ -146,6 +151,8 @@ class Personal(models.Model):
     cargo_especialidad = models.CharField(max_length=50, choices=CARGO_CHOICES, default='Entrenador')
     turno = models.CharField(max_length=20, choices=TURNO_CHOICES, default='Mañana')
     telefono = models.CharField(max_length=20, blank=True, null=True)
+    foto_perfil = models.ImageField(upload_to='personal/', blank=True, null=True)
+    descriptor_facial = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.nombre_completo} - {self.cargo_especialidad}"
