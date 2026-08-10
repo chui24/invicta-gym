@@ -59,8 +59,17 @@ class Suscripcion(models.Model):
     def porcentaje_tiempo(self):
         if not self.fecha_vencimiento or not getattr(self, 'plan', None) or self.plan.duracion_dias <= 0:
             return 0
+            
+        ultimo_pago = self.pagos.order_by('-fecha_pago').first()
+        inicio_ciclo = ultimo_pago.fecha_pago if ultimo_pago else self.fecha_inscripcion
         
-        total_dias = self.plan.duracion_dias
+        # Total de días desde el último pago hasta el vencimiento
+        total_dias = (self.fecha_vencimiento - inicio_ciclo).days
+        
+        # Fallback de seguridad por si hay inconsistencias en fechas
+        if total_dias <= 0:
+            total_dias = self.plan.duracion_dias
+            
         dias_rest = self.dias_restantes
         
         if dias_rest > total_dias:
