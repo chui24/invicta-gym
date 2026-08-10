@@ -48,7 +48,7 @@
                                         </div>
                                         {% endif %}
                                         <div>
-                                            <h6 class="m-0 font-bold text-lg">{{ asistencia.personal.nombre_completo }} <span class="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 inline-block align-middle">Staff</span></h6>
+                                            <h6 class="m-0 font-bold text-lg">{{ asistencia.personal.nombre_completo }} <span class="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 inline-block align-middle">Equipo</span></h6>
                                             <small class="text-brand-muted">{{ asistencia.personal.cargo_especialidad }} - Turno: {{ asistencia.personal.turno }}</small>
                                         </div>
                                     {% endif %}
@@ -57,6 +57,8 @@
                             <td class="py-4 px-6 text-brand-muted">
                                 {% if asistencia.cliente %}
                                     {{ asistencia.cliente.cedula }}
+                                {% elif asistencia.personal %}
+                                    {{ asistencia.personal.cedula|default:"<span class='text-gray-500 italic'>N/A</span>"|safe }}
                                 {% else %}
                                     <span class="text-gray-500 italic">N/A</span>
                                 {% endif %}

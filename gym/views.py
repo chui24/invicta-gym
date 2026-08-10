@@ -479,11 +479,11 @@ def validar_rostro(request):
                     'cliente': {
                         'id': mejor_match.id,
                         'nombre': mejor_match.nombre_completo,
-                        'cedula': mejor_match.cargo_especialidad,
+                        'cedula': mejor_match.cedula if mejor_match.cedula else 'N/A',
                         'foto': mejor_match.foto_perfil.url if mejor_match.foto_perfil else None
                     },
                     'suscripcion': {
-                        'plan': 'Staff',
+                        'plan': 'Equipo',
                         'fecha_inscripcion': 'N/A',
                         'fecha_vencimiento': 'N/A',
                         'metodo_pago_usual': 'N/A',

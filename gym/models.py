@@ -129,7 +129,7 @@ class Asistencia(models.Model):
         if self.cliente:
             return f"Asistencia Cliente: {self.cliente.nombre} - {self.fecha_hora_entrada.strftime('%Y-%m-%d %H:%M')}"
         elif self.personal:
-            return f"Asistencia Staff: {self.personal.nombre_completo} - {self.fecha_hora_entrada.strftime('%Y-%m-%d %H:%M')}"
+            return f"Asistencia Equipo: {self.personal.nombre_completo} - {self.fecha_hora_entrada.strftime('%Y-%m-%d %H:%M')}"
         return f"Asistencia Desconocida - {self.fecha_hora_entrada.strftime('%Y-%m-%d %H:%M')}"
 
 class Personal(models.Model):
@@ -140,15 +140,16 @@ class Personal(models.Model):
     ]
     
     CARGO_CHOICES = [
+        ('Entrenadora', 'Entrenadora'),
         ('Entrenador', 'Entrenador'),
         ('Recepcionista', 'Recepcionista'),
-        ('Mantenimiento', 'Mantenimiento'),
         ('Gerencia', 'Gerencia'),
         ('Otro', 'Otro'),
     ]
 
+    cedula = models.CharField(max_length=20, unique=True, null=True, blank=True)
     nombre_completo = models.CharField(max_length=150)
-    cargo_especialidad = models.CharField(max_length=50, choices=CARGO_CHOICES, default='Entrenador')
+    cargo_especialidad = models.CharField(max_length=50, choices=CARGO_CHOICES, default='Entrenadora')
     turno = models.CharField(max_length=20, choices=TURNO_CHOICES, default='Mañana')
     telefono = models.CharField(max_length=20, blank=True, null=True)
     foto_perfil = models.ImageField(upload_to='personal/', blank=True, null=True)

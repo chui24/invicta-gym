@@ -81,8 +81,9 @@ class PersonalForm(forms.ModelForm):
 
     class Meta:
         model = Personal
-        fields = ['nombre_completo', 'cargo_especialidad', 'turno', 'telefono']
+        fields = ['cedula', 'nombre_completo', 'cargo_especialidad', 'turno', 'telefono']
         widgets = {
+            'cedula': forms.TextInput(attrs={'class': TW_INPUT_CLASS, 'placeholder': 'Ej. 27507392'}),
             'nombre_completo': forms.TextInput(attrs={'class': TW_INPUT_CLASS, 'placeholder': 'Ej. María Pérez'}),
             'cargo_especialidad': forms.Select(attrs={'class': TW_SELECT_CLASS}),
             'turno': forms.Select(attrs={'class': TW_SELECT_CLASS}),

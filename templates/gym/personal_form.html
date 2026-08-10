@@ -39,8 +39,14 @@
                     <!-- Columna de Datos del Staff -->
                     <div class="w-full lg:w-1/2 relative z-10">
                         <h5 class="mb-6 text-brand-muted font-bold text-sm uppercase tracking-widest flex items-center">
-                            <i class="bi bi-person-badge-fill text-brand-accent text-xl mr-3 drop-shadow-[0_0_8px_rgba(213,0,249,0.8)]"></i> DATOS DEL STAFF
+                            <i class="bi bi-person-badge-fill text-brand-accent text-xl mr-3 drop-shadow-[0_0_8px_rgba(213,0,249,0.8)]"></i> DATOS DEL EQUIPO
                         </h5>
+                        
+                        <div class="mb-6">
+                            <label for="{{ form.cedula.id_for_label }}" class="block mb-2 text-brand-muted font-bold">Cédula *</label>
+                            {{ form.cedula }}
+                            {{ form.cedula.errors }}
+                        </div>
                         
                         <div class="mb-6">
                             <label for="{{ form.nombre_completo.id_for_label }}" class="block mb-2 text-brand-muted font-bold">Nombre Completo *</label>
