@@ -69,17 +69,16 @@ function mostrarPerfil(data) {
     const btnDiet = document.getElementById('btn_diet');
     const venceContainer = document.getElementById('val_vence_container');
     const planLabel = document.getElementById('val_plan_label');
+    const actionContainer = document.getElementById('botones_accion_container');
 
     if (data.tipo === 'staff') {
         if (planLabel) planLabel.textContent = 'Rol:';
         if (venceContainer) venceContainer.style.display = 'none';
-        if (btnRoutine) btnRoutine.style.display = 'none';
-        if (btnDiet) btnDiet.style.display = 'none';
+        if (actionContainer) actionContainer.style.display = 'none';
     } else {
         if (planLabel) planLabel.textContent = 'Plan:';
         if (venceContainer) venceContainer.style.display = 'flex';
-        if (btnRoutine) btnRoutine.style.display = 'block';
-        if (btnDiet) btnDiet.style.display = 'block';
+        if (actionContainer) actionContainer.style.display = 'flex';
     }
 
     
