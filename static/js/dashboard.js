@@ -100,7 +100,8 @@ function mostrarPerfil(data) {
     }
 
     // Evaluar color del semáforo
-    document.getElementById('val_estado').textContent = data.estado || 'Inactivo';
+    const valEstado = document.getElementById('val_estado');
+    valEstado.textContent = data.estado || 'Inactivo';
     statusIcon.classList.remove('hidden');
     
     if (data.estado_color === 'Verde') {
@@ -108,16 +109,19 @@ function mostrarPerfil(data) {
         statusIcon.classList.add('bg-green-500/20', 'text-green-500', 'border-green-500');
         statusIcon.innerHTML = '<i class="bi bi-check-lg text-2xl"></i>';
         msgEl.className = 'font-bold text-lg m-0 drop-shadow-md text-green-400';
+        valEstado.className = 'font-bold tracking-wide px-3 py-1 rounded-full text-xs border shadow-[0_0_10px_rgba(34,197,94,0.6)] bg-green-500/20 text-green-400 border-green-500/50 uppercase';
     } else if (data.estado_color === 'Amarillo') {
         card.classList.add('border-yellow-500');
         statusIcon.classList.add('bg-yellow-500/20', 'text-yellow-500', 'border-yellow-500');
         statusIcon.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-xl"></i>';
         msgEl.className = 'font-bold text-lg m-0 drop-shadow-md text-yellow-400';
+        valEstado.className = 'font-bold tracking-wide px-3 py-1 rounded-full text-xs border shadow-[0_0_10px_rgba(234,179,8,0.6)] bg-yellow-500/20 text-yellow-400 border-yellow-500/50 uppercase';
     } else {
         card.classList.add('border-red-500');
         statusIcon.classList.add('bg-red-500/20', 'text-red-500', 'border-red-500');
         statusIcon.innerHTML = '<i class="bi bi-x-lg text-xl"></i>';
         msgEl.className = 'font-bold text-lg m-0 drop-shadow-md text-red-400';
+        valEstado.className = 'font-bold tracking-wide px-3 py-1 rounded-full text-xs border shadow-[0_0_10px_rgba(239,68,68,0.6)] bg-red-500/20 text-red-400 border-red-500/50 uppercase';
     }
 }
 
