@@ -118,6 +118,8 @@ class Pago(models.Model):
 
 class ConfiguracionSistema(models.Model):
     dias_gracia = models.IntegerField(default=0, help_text="Días de tolerancia después del vencimiento")
+    tasa_bcv = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Tasa de cambio oficial BCV")
+    ultima_actualizacion_bcv = models.DateTimeField(null=True, blank=True, help_text="Última vez que se actualizó la tasa")
 
     def save(self, *args, **kwargs):
         if not self.pk and ConfiguracionSistema.objects.exists():

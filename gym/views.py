@@ -245,11 +245,17 @@ def renovar_suscripcion(request, cliente_id):
                 initial_data['metodo_pago'] = ultimo_pago.metodo_pago
                 
         form = RenovacionForm(initial=initial_data)
-        
+    config = ConfiguracionSistema.get_config()
+    import json
+    from .models import Plan
+    planes_data = {str(p.id): float(p.tarifa) for p in Plan.objects.all()}
+    
     return render(request, 'gym/renovacion_form.html', {
         'form': form, 
         'cliente': cliente,
-        'ultima_suscripcion': ultima_suscripcion
+        'ultima_suscripcion': ultima_suscripcion,
+        'tasa_bcv': config.tasa_bcv,
+        'planes_data': json.dumps(planes_data)
     })
 
 def cliente_list(request):

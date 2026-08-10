@@ -106,6 +106,24 @@ Debido a que el proyecto está en Docker, los comandos administrativos de Django
 *   **Logs:** `docker compose logs -f web` (Para ver errores de backend) o `docker compose logs -f tailwind` (Para ver la compilación de CSS).
 
 ### 4. Próximos Pasos (Roadmap)
-*   **Fase de Módulos:** Implementar los modelos y vistas para "Rutinas" y "Nutrición".
+*   **Fase de Módulos (En Proceso):** Implementación gradual de características clave para el negocio (Gestores, Automatizaciones).
 *   **Control de Accesos:** Robustecer la lógica de autenticación y vistas protegidas.
 *   **Optimización de Producción:** Cambiar el servidor de desarrollo (`runserver`) por `Gunicorn` u otro servidor WSGI/ASGI de producción cuando se decida desplegar.
+
+---
+
+## 7. Historial de Fases e Implementaciones
+
+### Fase 1: Gestor de Planes, Directorio de Personal y Refinamiento Biométrico
+Se implementaron los módulos administrativos iniciales para robustecer el control del gimnasio:
+
+*   **Gestor de Planes (CRUD):** Creación de interfaces administrativas para gestionar membresías (Listar, Crear, Editar, Eliminar). Las vistas heredan inyección de utilidades de diseño backend (`TW_INPUT_CLASS`) para mantener el estilo Glassmorphism y Dark Neon.
+*   **Directorio de Personal:** 
+    *   Nuevo modelo `Personal` que integra los mismos campos de biometría que los clientes, pero adaptado a roles internos (Ej. *Entrenadora, Gerencia, Recepcionista*).
+    *   Adición del campo `cédula` como identificador clave, visible en los historiales de asistencia.
+*   **Refinamiento Biométrico y Dashboard Dinámico (Polimorfismo):**
+    *   La API del escáner (`validar_rostro`) se actualizó para devolver el `tipo` de usuario detectado (`cliente` vs `staff`) y un `estado` semántico descriptivo (`Activo`, `Inactivo`, `Alerta`) en español, en lugar de simples colores.
+    *   **Dashboard Condicional en JS:** La UI de la tarjeta de validación reacciona dinámicamente al tipo de persona escaneada. Si es staff, oculta fechas de vencimiento y botones de rutinas (irrelevantes para el personal); si es cliente, despliega todas sus opciones. Adicionalmente, incluye "badges" (etiquetas) con efectos de neón para destacar el estado del usuario.
+*   **Lógica Inteligente de Barras de Progreso:**
+    *   Se solucionó el desbordamiento de las barras de progreso cuando un cliente acumulaba pagos (días apilados). 
+    *   El método `@property porcentaje_tiempo` en `Suscripcion` ahora calcula dinámicamente el progreso **basándose en la fecha del último pago**, asegurando que la barra represente visualmente la duración real y restante del ciclo pagado más reciente, logrando que inicie al 100% y se reduzca suavemente.

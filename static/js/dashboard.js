@@ -1,3 +1,17 @@
+// Diccionario de audios pre-cargados
+const audios_feedback = {
+    'Activo': new Audio(encodeURI('/static/audios/bienvenida_al_gym.mp3')),
+    'Alerta': new Audio(encodeURI('/static/audios/(recordatorio de pago).mp3')),
+    'Inactivo': new Audio(encodeURI('/static/audios/(pago vencido).mp3'))
+};
+
+function detenerAudios() {
+    Object.values(audios_feedback).forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+    });
+}
+
 document.getElementById('form_busqueda').addEventListener('submit', function(e) {
     e.preventDefault();
     const cedula = document.getElementById('cedula_input').value.trim();
@@ -122,6 +136,15 @@ function mostrarPerfil(data) {
         statusIcon.innerHTML = '<i class="bi bi-x-lg text-xl"></i>';
         msgEl.className = 'font-bold text-lg m-0 drop-shadow-md text-red-400';
         valEstado.className = 'font-bold tracking-wide px-3 py-1 rounded-full text-xs border shadow-[0_0_10px_rgba(239,68,68,0.6)] bg-red-500/20 text-red-400 border-red-500/50 uppercase';
+    }
+
+    // Feedback Auditivo (Solo para clientes)
+    if (data.tipo === 'cliente' && data.estado) {
+        detenerAudios();
+        const audio = audios_feedback[data.estado];
+        if (audio) {
+            audio.play().catch(e => console.log('Error reproduciendo audio: ', e));
+        }
     }
 }
 
