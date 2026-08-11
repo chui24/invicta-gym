@@ -1,7 +1,7 @@
 // Diccionario de audios pre-cargados
 const audios_feedback = {
     'Activo': new Audio(encodeURI('/static/audios/bienvenida_al_gym.mp3')),
-    'Alerta': new Audio(encodeURI('/static/audios/(recordatorio de pago).mp3')),
+    'Por vencer': new Audio(encodeURI('/static/audios/(recordatorio de pago).mp3')),
     'Inactivo': new Audio(encodeURI('/static/audios/(pago vencido).mp3'))
 };
 

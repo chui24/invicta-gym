@@ -532,7 +532,7 @@ def validar_rostro(request):
                     # Si faltan 3 días o menos, lanzar pre-alerta de renovación
                     if (vencimiento - hoy).days <= 3:
                         estado_color = 'Amarillo'
-                        estado = 'Alerta'
+                        estado = 'Por vencer'
                         mensaje = f'Acceso Permitido. Recuerde que su plan vence en {(vencimiento - hoy).days} días.'
                     else:
                         estado_color = 'Verde'
@@ -541,7 +541,7 @@ def validar_rostro(request):
                     registrar_asistencia = True
                 elif hoy <= limite_gracia:
                     estado_color = 'Amarillo'
-                    estado = 'Alerta'
+                    estado = 'Por vencer'
                     mensaje = f'Alerta: Mensualidad vencida. En periodo de gracia ({dias_gracia} días).'
                     registrar_asistencia = True
                 else:
