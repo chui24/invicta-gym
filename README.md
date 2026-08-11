@@ -1,65 +1,65 @@
-# Invicta Gym - Sistema de Gestión y Control Biométrico 🏋️‍♂️
+# Invicta Gym - Management and Biometric Control System
 
-![Invicta Gym](static/img/invicta_logo.png)
+![Invicta Gym Logo](static/img/invicta_logo.png)
 
-Invicta Gym es una plataforma integral para la administración de gimnasios, desarrollada para modernizar el control de acceso y la gestión de membresías. El sistema destaca por integrar un motor de **reconocimiento facial en el backend** que autoriza o deniega el acceso a las instalaciones basándose en el estado de pago del cliente (Semáforo de Acceso).
+Invicta Gym is a comprehensive platform designed to modernize access control and membership management for fitness centers. The core feature of this system is its robust facial recognition engine deployed in the backend, which manages physical access to the facilities based on real-time financial statuses (Access Semaphore System).
 
-## 🚀 Características Principales
+## Key Features
 
-*   **Validación Biométrica Inteligente:** Detección y validación facial instantánea procesada en el servidor (Python/OpenCV/dlib) para máxima seguridad y compatibilidad con dispositivos de bajos recursos en la recepción.
-*   **Semáforo de Acceso:** Sistema visual y lógico que permite la entrada según los días de gracia, estado de membresía o bloqueos por morosidad.
-*   **Control de Clientes y Planes:** Registro completo de perfiles, suscripciones (renovaciones) y métodos de pago integrados.
-*   **Interfaz de Usuario Premium:** Diseño moderno y responsivo con estética Dark/Neon (Glassmorphism), construido 100% con Tailwind CSS.
-*   **Resiliencia Probada:** Testeado bajo estrés (k6) tolerando altas ráfagas de validación y registros simultáneos sin presentar cuellos de botella ni *memory leaks*.
+* **Intelligent Biometric Validation:** Real-time facial detection and validation processed server-side (Python/OpenCV/dlib), ensuring high security standards and allowing low-resource edge devices at reception points.
+* **Access Semaphore Engine:** A visual and logical gateway that automatically grants or denies entry based on dynamic grace periods, membership validity, and payment statuses.
+* **Membership and Client Management:** Full administrative control over client profiles, subscriptions, renewals, and integrated payment tracking.
+* **Dynamic Currency Automation:** Automated daily web scraping of official BCV exchange rates to dynamically calculate Bolivar (Bs) pricing in real time during membership renewals.
+* **Premium User Interface:** A modern, responsive design built with Tailwind CSS, featuring a Dark/Neon aesthetic (Glassmorphism) optimized for low-light gym environments.
+* **High Availability & Resilience:** Stress-tested architecture designed to tolerate high volumes of simultaneous biometric validations and database transactions without bottlenecks or memory leaks.
 
-## 🛠️ Stack Tecnológico
+## Technology Stack
 
-*   **Backend:** Python 3, Django, Django REST Framework
-*   **Biometría:** `face_recognition`, OpenCV (`opencv-python-headless`), NumPy
-*   **Base de Datos:** PostgreSQL 15
-*   **Frontend:** HTML5, JavaScript Vanilla (Fetch API / Async), Tailwind CSS v3
-*   **Infraestructura:** Docker & Docker Compose (Arquitectura en contenedores)
-*   **QA / Testing:** Grafana k6
+* **Backend Environment:** Python 3, Django, Django REST Framework
+* **Computer Vision:** `face_recognition`, OpenCV (`opencv-python-headless`), NumPy
+* **Database Management:** PostgreSQL 15
+* **Frontend Technologies:** HTML5, JavaScript (Vanilla ES6+), Tailwind CSS v3
+* **Infrastructure & Containerization:** Docker, Docker Compose
+* **Quality Assurance:** Grafana k6 (Load Testing)
 
-## 📋 Requisitos Previos
+## Prerequisites
 
-Para ejecutar este proyecto en cualquier entorno local o VPS, solo necesitas tener instalados:
+To deploy this project in a local or VPS environment, the host machine only requires the following container orchestration tools:
 
-*   [Docker](https://docs.docker.com/get-docker/)
-*   [Docker Compose](https://docs.docker.com/compose/install/)
+* [Docker](https://docs.docker.com/get-docker/)
+* [Docker Compose](https://docs.docker.com/compose/install/)
 
-*(No es necesario instalar Python, Node o Postgres en la máquina host, todo está contenedorizado).*
+*(Python, Node.js, and PostgreSQL do not need to be installed on the host machine as the architecture is fully containerized).*
 
-## ⚙️ Instalación y Despliegue (Local)
+## Installation and Deployment
 
-1. **Clonar el repositorio**
+1. **Clone the repository**
    ```bash
    git clone https://github.com/chui24/invicta-gym.git
    cd invicta-gym
    ```
 
-2. **Levantar la infraestructura con Docker**
-   Al levantar los contenedores, se compilarán las dependencias necesarias de C++ para el motor de visión artificial (esto puede tardar un par de minutos la primera vez).
+2. **Deploy the infrastructure using Docker**
+   During the initial build, C++ dependencies required for the computer vision engine will be compiled automatically.
    ```bash
    docker compose up --build -d
    ```
 
-3. **Acceder a la aplicación**
-   Abre tu navegador web y visita: `http://localhost:8000`
+3. **Access the Application**
+   Navigate to the following address in your web browser: `http://localhost:8000`
 
-## 📂 Estructura del Proyecto
+## Project Structure
 
-*   `/gym/`: Aplicación principal de Django (Modelos, Vistas, Lógica Biométrica).
-*   `/config/`: Configuraciones de settings y ruteo central de Django.
-*   `/templates/`: Vistas y modales en HTML.
-*   `/static/`: Hojas de estilos (Tailwind compilado, base CSS) y lógica asíncrona (JS).
-*   `/media/`: Almacenamiento local (ignorado en Git) para fotos de perfil generadas vía webcam.
-*   `k6_test*.js`: Scripts de pruebas de carga para stress testing.
+* `/gym/`: Main Django application containing data models, views, and the core biometric logic.
+* `/config/`: Central routing, system settings, and environment configurations.
+* `/templates/`: Server-rendered HTML templates.
+* `/static/`: Asynchronous logic (JS), compiled stylesheets (Tailwind), and media assets.
+* `/media/`: Local storage volume (ignored by version control) for storing baseline facial recognition data.
 
-## 🔒 Notas de Desarrollo
+## Development Notes
 
-*   **Compilación del Frontend:** Si modificas el diseño y necesitas recompilar Tailwind, el contenedor `tailwind` ya cuenta con un `npm run tailwind:watch` ejecutándose en segundo plano. Los cambios se verán reflejados al instante.
-*   **Performance:** El límite de latencia del escáner facial es de ~33ms (P95) en un entorno de 1 núcleo / 1GB RAM. No se recomienda usar JS puro en el frontend para el reconocimiento por limitantes de memoria y compatibilidad de la cámara del cliente final.
+* **Frontend Compilation:** The `tailwind` container runs an active `npm run tailwind:watch` process in the background. UI modifications will be compiled and reflected instantaneously without manual intervention.
+* **Performance Considerations:** The facial recognition pipeline maintains a latency threshold of ~33ms (P95) on a 1-core / 1GB RAM environment. Client-side JS processing for computer vision is intentionally avoided to bypass hardware limitations on reception devices.
 
 ---
-*Desarrollado y testeado para garantizar estabilidad industrial en entornos de alto tráfico.*
+*Developed and tested to guarantee industrial stability in high-traffic environments.*
