@@ -115,6 +115,10 @@
                     <a href="{% url 'cliente_renovar' cliente.id %}" class="w-10 h-10 rounded-xl bg-[#d500f9]/10 text-brand-accent border border-brand-accent/30 flex items-center justify-center hover:bg-brand-accent hover:text-white transition-all hover:shadow-[0_0_15px_rgba(213,0,249,0.5)] group/btn" title="Registrar Pago">
                         <i class="bi bi-currency-dollar text-lg"></i>
                     </a>
+                    <!-- Ver Rutina -->
+                    <a href="{% url 'rutina_cliente' cliente.id %}" class="w-10 h-10 rounded-xl bg-[#d500f9]/10 text-brand-accent border border-brand-accent/30 flex items-center justify-center hover:bg-brand-accent hover:text-white transition-all hover:shadow-[0_0_15px_rgba(213,0,249,0.5)] group/btn" title="Ver Rutina">
+                        <i class="bi bi-person-arms-up text-sm"></i>
+                    </a>
                     <!-- Editar -->
                     <a href="{% url 'cliente_editar' cliente.id %}" class="w-10 h-10 rounded-xl bg-[#d500f9]/10 text-brand-accent border border-brand-accent/30 flex items-center justify-center hover:bg-brand-accent hover:text-white transition-all hover:shadow-[0_0_15px_rgba(213,0,249,0.5)] group/btn" title="Editar">
                         <i class="bi bi-pencil-fill text-sm"></i>

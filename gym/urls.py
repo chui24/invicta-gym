@@ -23,4 +23,9 @@ urlpatterns = [
     path('personal/crear/', views.personal_crear, name='personal_crear'),
     path('personal/editar/<int:pk>/', views.personal_editar, name='personal_editar'),
     path('personal/eliminar/<int:pk>/', views.personal_eliminar, name='personal_eliminar'),
+    
+    # Rutinas y Progresión
+    path('cliente/<int:cliente_id>/rutina/', views.perfil_entrenamiento_cliente, name='rutina_cliente'),
+    path('cliente/<int:cliente_id>/rutina/crear/', views.rutina_crear, name='rutina_crear'),
+    path('api/guardar_peso/', views.guardar_peso_ajax, name='guardar_peso'),
 ]

@@ -30,7 +30,7 @@ def actualizar_tasa_bcv():
             tasa_nueva = float(valor_limpio)
             
             # Actualizar DB
-            config = ConfiguracionSistema.get_config()
+            config, _ = ConfiguracionSistema.objects.get_or_create(id=1, defaults={'dias_gracia': 0})
             config.tasa_bcv = tasa_nueva
             config.ultima_actualizacion_bcv = timezone.now()
             config.save()

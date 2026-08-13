@@ -133,6 +133,22 @@ class ConfiguracionSistema(models.Model):
     @classmethod
     def get_config(cls):
         config, created = cls.objects.get_or_create(id=1, defaults={'dias_gracia': 0})
+        
+        from django.utils import timezone
+        
+        hoy = timezone.now().date()
+        ultima = config.ultima_actualizacion_bcv.date() if config.ultima_actualizacion_bcv else None
+        
+        if not ultima or ultima < hoy:
+            from gym.utils.bcv_scraper import actualizar_tasa_bcv
+            try:
+                # Actualiza la tasa si no se ha hecho hoy
+                nueva_tasa = actualizar_tasa_bcv()
+                if nueva_tasa:
+                    config.refresh_from_db()
+            except Exception:
+                pass
+                
         return config
 
 class Asistencia(models.Model):
@@ -172,3 +188,50 @@ class Personal(models.Model):
 
     def __str__(self):
         return f"{self.nombre_completo} - {self.cargo_especialidad}"
+
+# --- FASE 3: RUTINAS Y PROGRESIÓN ---
+
+class Mesociclo(models.Model):
+    nombre = models.CharField(max_length=150)
+    duracion_semanas = models.IntegerField(default=12)
+    coach = models.ForeignKey(Personal, on_delete=models.SET_NULL, null=True, blank=True, related_name='mesociclos')
+    
+    def __str__(self):
+        return f"{self.nombre} ({self.duracion_semanas} semanas)"
+
+class DiaRutina(models.Model):
+    mesociclo = models.ForeignKey(Mesociclo, on_delete=models.CASCADE, related_name='dias')
+    numero_dia = models.IntegerField()
+    enfoque = models.CharField(max_length=150)
+    
+    class Meta:
+        ordering = ['numero_dia']
+    
+    def __str__(self):
+        return f"Día {self.numero_dia}: {self.enfoque} - {self.mesociclo.nombre}"
+
+class EjercicioRutina(models.Model):
+    dia_rutina = models.ForeignKey(DiaRutina, on_delete=models.CASCADE, related_name='ejercicios')
+    nombre_ejercicio = models.CharField(max_length=150)
+    series = models.CharField(max_length=50)
+    repeticiones = models.CharField(max_length=100)
+    
+    def __str__(self):
+        return self.nombre_ejercicio
+
+class AsignacionCliente(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='asignaciones')
+    mesociclo = models.ForeignKey(Mesociclo, on_delete=models.CASCADE)
+    fecha_inicio = models.DateField()
+    
+    def __str__(self):
+        return f"{self.cliente.nombre} - {self.mesociclo.nombre}"
+
+class RegistroProgresion(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='progresiones')
+    ejercicio = models.ForeignKey(EjercicioRutina, on_delete=models.CASCADE, related_name='registros')
+    fecha = models.DateField(auto_now_add=True)
+    peso_levantado = models.CharField(max_length=50)
+    
+    def __str__(self):
+        return f"{self.cliente.nombre} - {self.ejercicio.nombre_ejercicio}: {self.peso_levantado} ({self.fecha})"

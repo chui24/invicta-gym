@@ -12,7 +12,7 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Count, Q
 
-from .models import Cliente, Asistencia, ConfiguracionSistema, Suscripcion, Pago, Plan, Personal
+from .models import Cliente, Asistencia, ConfiguracionSistema, Suscripcion, Pago, Plan, Personal, Mesociclo, DiaRutina, EjercicioRutina, AsignacionCliente, RegistroProgresion
 from .forms import RegistroClienteForm, RenovacionForm, ClienteEditForm, PlanForm, PersonalForm
 
 def get_face_encoding_from_base64(imgstr):
@@ -52,8 +52,11 @@ def validar_acceso_semaforo(request):
     
     if not suscripcion or not suscripcion.fecha_vencimiento:
         return JsonResponse({
+            'status': 'success',
+            'tipo': 'cliente',
             'error': 'El cliente no tiene suscripciones activas', 
-            'estado': 'Rojo',
+            'estado_color': 'Rojo',
+            'estado': 'Inactivo',
             'cliente': {
                 'id': cliente.id,
                 'nombre': cliente.nombre,
@@ -73,15 +76,23 @@ def validar_acceso_semaforo(request):
     
     # Lógica del Semáforo
     if hoy <= vencimiento:
-        estado = 'Verde'
-        mensaje = 'Acceso Permitido'
+        if (vencimiento - hoy).days <= 3:
+            estado_color = 'Amarillo'
+            estado = 'Por vencer'
+            mensaje = f'Acceso Permitido. Recuerde que su plan vence en {(vencimiento - hoy).days} días.'
+        else:
+            estado_color = 'Verde'
+            estado = 'Activo'
+            mensaje = 'Acceso Permitido'
         registrar_asistencia = True
     elif hoy <= limite_gracia:
-        estado = 'Amarillo'
+        estado_color = 'Amarillo'
+        estado = 'Por vencer'
         mensaje = f'Alerta: Mensualidad vencida. En periodo de gracia ({dias_gracia} días).'
         registrar_asistencia = True
     else:
-        estado = 'Rojo'
+        estado_color = 'Rojo'
+        estado = 'Inactivo'
         mensaje = 'Acceso Denegado: Superó los días de gracia, exige pago.'
         registrar_asistencia = False
         
@@ -92,6 +103,9 @@ def validar_acceso_semaforo(request):
     metodo_pago_usual = ultimo_pago.metodo_pago if ultimo_pago else 'No registrado'
     
     data = {
+        'status': 'success',
+        'tipo': 'cliente',
+        'estado_color': estado_color,
         'estado': estado,
         'mensaje': mensaje,
         'cliente': {
@@ -254,6 +268,7 @@ def renovar_suscripcion(request, cliente_id):
         'form': form, 
         'cliente': cliente,
         'ultima_suscripcion': ultima_suscripcion,
+        'hoy': timezone.now().date(),
         'tasa_bcv': config.tasa_bcv,
         'planes_data': json.dumps(planes_data)
     })
@@ -274,10 +289,19 @@ def cliente_list(request):
         
     clientes_list = []
     
+    hoy = timezone.now().date()
     for c in clientes_queryset:
         subs = list(c.suscripciones.all())
         subs.sort(key=lambda x: x.fecha_vencimiento if x.fecha_vencimiento else timezone.datetime.min.date(), reverse=True)
         latest_sub = subs[0] if subs else None
+        
+        # Actualización dinámica en memoria del estado según la fecha de vencimiento real
+        if latest_sub and latest_sub.fecha_vencimiento:
+            if latest_sub.fecha_vencimiento < hoy:
+                latest_sub.estado = 'Vencido'
+            else:
+                latest_sub.estado = 'Activo'
+                
         c.latest_sub = latest_sub
         
         if estado:
@@ -579,6 +603,196 @@ def validar_rostro(request):
                 return JsonResponse(data)
             else:
                 return JsonResponse({'status': 'unknown_face'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+            
+    return JsonResponse({'status': 'invalid_method'})
+
+def rutina_crear(request, cliente_id):
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+    
+    if request.method == 'POST':
+        import json
+        from django.db import transaction
+        try:
+            data = json.loads(request.body)
+            with transaction.atomic():
+                coach = None
+                if data.get('coach_id'):
+                    coach = Personal.objects.filter(id=data['coach_id']).first()
+                    
+                mesociclo = Mesociclo.objects.create(
+                    nombre=data.get('nombre', 'Rutina Personalizada'),
+                    duracion_semanas=int(data.get('duracion', 4)),
+                    coach=coach
+                )
+                
+                for dia_data in data.get('dias', []):
+                    dia = DiaRutina.objects.create(
+                        mesociclo=mesociclo,
+                        numero_dia=int(dia_data.get('numero', 1)),
+                        enfoque=dia_data.get('enfoque', '')
+                    )
+                    
+                    for ej_data in dia_data.get('ejercicios', []):
+                        EjercicioRutina.objects.create(
+                            dia_rutina=dia,
+                            nombre_ejercicio=ej_data.get('nombre', ''),
+                            series='-',
+                            repeticiones=ej_data.get('detalles', '')
+                        )
+                
+                AsignacionCliente.objects.create(
+                    cliente=cliente,
+                    mesociclo=mesociclo,
+                    fecha_inicio=timezone.localdate()
+                )
+                
+            return JsonResponse({'status': 'success', 'message': 'Rutina creada y asignada correctamente'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+            
+    coaches = Personal.objects.exclude(cargo_especialidad__in=['Recepcionista', 'Gerencia'])
+    return render(request, 'gym/rutina_crear.html', {'cliente': cliente, 'coaches': coaches})
+
+# --- FASE 3: RUTINAS Y PROGRESIÓN ---
+
+def perfil_entrenamiento_cliente(request, cliente_id):
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+    asignacion = AsignacionCliente.objects.filter(cliente=cliente).order_by('-fecha_inicio').first()
+    
+    if not asignacion:
+        return render(request, 'gym/rutina_cliente.html', {
+            'cliente': cliente,
+            'mensaje': 'Este cliente no tiene una rutina asignada.'
+        })
+        
+    mesociclo = asignacion.mesociclo
+    fecha_inicio = asignacion.fecha_inicio
+    hoy = timezone.localdate()
+    
+    # Calcular semana cronológica actual (1-indexed)
+    dias_pasados = (hoy - fecha_inicio).days
+    semana_cronologica = max(1, (dias_pasados // 7) + 1)
+    if semana_cronologica > mesociclo.duracion_semanas:
+        semana_cronologica = mesociclo.duracion_semanas
+        
+    # Obtener parámetros de la URL
+    semana_seleccionada = request.GET.get('semana')
+    if semana_seleccionada and semana_seleccionada.isdigit():
+        semana_seleccionada = int(semana_seleccionada)
+    else:
+        semana_seleccionada = semana_cronologica
+        
+    dia_seleccionado = request.GET.get('dia')
+    if dia_seleccionado and dia_seleccionado.isdigit():
+        dia_seleccionado = int(dia_seleccionado)
+    else:
+        dia_seleccionado = (dias_pasados % 7) + 1 # 1=Lunes, 7=Domingo
+        if semana_seleccionada != semana_cronologica:
+            dia_seleccionado = 1 # Si cambia de semana, mostrar por defecto el día 1
+
+    # Calcular progreso total
+    # Asumimos 5 días a la semana de entrenamiento en promedio.
+    dias_totales_plan = mesociclo.duracion_semanas * 5 
+    dias_asistidos_totales = Asistencia.objects.filter(cliente=cliente, fecha_hora_entrada__date__gte=fecha_inicio).values('fecha_hora_entrada__date').distinct().count()
+    progreso_porcentaje = int((dias_asistidos_totales / dias_totales_plan) * 100) if dias_totales_plan > 0 else 0
+    progreso_porcentaje = min(100, progreso_porcentaje)
+    
+    # Generar lista de semanas
+    rango_semanas = list(range(1, mesociclo.duracion_semanas + 1))
+    
+    # Calcular fechas de la semana seleccionada
+    inicio_semana_seleccionada = fecha_inicio + timedelta(days=(semana_seleccionada - 1) * 7)
+    
+    # Asistencias de esa semana para la cuadrícula
+    asistencias_semana = Asistencia.objects.filter(
+        cliente=cliente,
+        fecha_hora_entrada__date__gte=inicio_semana_seleccionada,
+        fecha_hora_entrada__date__lte=inicio_semana_seleccionada + timedelta(days=6)
+    ).values_list('fecha_hora_entrada__date', flat=True)
+    dias_asistidos_semana = set(asistencias_semana)
+
+    # Cuadrícula de 7 días
+    cuadricula = []
+    # Precargar todos los días de rutina del mesociclo
+    dias_rutina_obj = {d.numero_dia: d for d in DiaRutina.objects.filter(mesociclo=mesociclo)}
+    
+    for i in range(7):
+        numero_dia = i + 1
+        fecha_dia = inicio_semana_seleccionada + timedelta(days=i)
+        asistio = fecha_dia in dias_asistidos_semana
+        dia_r = dias_rutina_obj.get(numero_dia)
+        enfoque = dia_r.enfoque if dia_r else 'Descanso'
+        
+        cuadricula.append({
+            'numero_dia': numero_dia,
+            'fecha': fecha_dia,
+            'es_hoy': fecha_dia == hoy,
+            'asistio': asistio,
+            'enfoque': enfoque,
+            'seleccionado': numero_dia == dia_seleccionado
+        })
+        
+    # Ejercicios del día seleccionado
+    dia_rutina_actual = dias_rutina_obj.get(dia_seleccionado)
+    fecha_seleccionada = inicio_semana_seleccionada + timedelta(days=dia_seleccionado - 1)
+    
+    ejercicios_con_progresion = []
+    if dia_rutina_actual:
+        ejercicios = dia_rutina_actual.ejercicios.all()
+        for ej in ejercicios:
+            prog = RegistroProgresion.objects.filter(cliente=cliente, ejercicio=ej, fecha=fecha_seleccionada).first()
+            ejercicios_con_progresion.append({
+                'ejercicio': ej,
+                'peso_registrado': prog.peso_levantado if prog else ''
+            })
+
+    return render(request, 'gym/rutina_cliente.html', {
+        'cliente': cliente,
+        'mesociclo': mesociclo,
+        'semana_seleccionada': semana_seleccionada,
+        'semana_cronologica': semana_cronologica,
+        'rango_semanas': rango_semanas,
+        'progreso_porcentaje': progreso_porcentaje,
+        'cuadricula': cuadricula,
+        'dia_rutina_actual': dia_rutina_actual,
+        'ejercicios_con_progresion': ejercicios_con_progresion,
+        'fecha_seleccionada': fecha_seleccionada
+    })
+
+def guardar_peso_ajax(request):
+    if request.method == 'POST':
+        import json
+        try:
+            data = json.loads(request.body)
+            cliente_id = data.get('cliente_id')
+            ejercicio_id = data.get('ejercicio_id')
+            peso = data.get('peso')
+            fecha_str = data.get('fecha')
+            
+            cliente = get_object_or_404(Cliente, id=cliente_id)
+            ejercicio = get_object_or_404(EjercicioRutina, id=ejercicio_id)
+            
+            # Parse the date passed from the frontend, default to today
+            if fecha_str:
+                from datetime import datetime
+                fecha_guardado = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+            else:
+                fecha_guardado = timezone.localdate()
+            
+            registro, created = RegistroProgresion.objects.get_or_create(
+                cliente=cliente,
+                ejercicio=ejercicio,
+                fecha=fecha_guardado,
+                defaults={'peso_levantado': peso}
+            )
+            
+            if not created:
+                registro.peso_levantado = peso
+                registro.save()
+                
+            return JsonResponse({'status': 'success', 'message': 'Peso guardado'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
             

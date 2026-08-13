@@ -66,9 +66,18 @@ function mostrarPerfil(data) {
             document.getElementById('btn_renovar').href = `/cliente/renovar/${data.cliente.id}/`;
             document.getElementById('renovar_container').style.display = 'block';
             document.getElementById('renovar_container').classList.remove('hidden');
+            
+            const btnRoutine = document.getElementById('btn_routine');
+            if (btnRoutine) {
+                btnRoutine.href = `/cliente/${data.cliente.id}/rutina/`;
+                btnRoutine.classList.remove('hidden');
+            }
         } else {
             document.getElementById('renovar_container').style.display = 'none';
             document.getElementById('renovar_container').classList.add('hidden');
+            
+            const btnRoutine = document.getElementById('btn_routine');
+            if (btnRoutine) btnRoutine.classList.add('hidden');
         }
     } else {
         document.getElementById('val_nombre').textContent = 'Desconocido';
@@ -77,9 +86,10 @@ function mostrarPerfil(data) {
         nofoto.style.display = 'block';
         document.getElementById('renovar_container').style.display = 'none';
         document.getElementById('renovar_container').classList.add('hidden');
+        const btnRoutine = document.getElementById('btn_routine');
+        if (btnRoutine) btnRoutine.classList.add('hidden');
     }
 
-    const btnRoutine = document.getElementById('btn_routine');
     const btnDiet = document.getElementById('btn_diet');
     const venceContainer = document.getElementById('val_vence_container');
     const planLabel = document.getElementById('val_plan_label');

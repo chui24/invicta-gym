@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Rutina para {{ cliente.nombre }} - Invicta Gym{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-6xl mx-auto pb-12" id="routine-builder-app">
+    <!-- Encabezado y Navegación Básica -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <a href="{% url 'rutina_cliente' cliente.id %}" class="bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium py-2 px-4 rounded-full transition-all duration-300 border border-white/10 flex items-center mb-4 md:mb-0">
+            <i class="bi bi-arrow-left mr-2"></i> Cancelar
+        </a>
+        <button id="btn-save-routine" class="bg-neon-pink hover:bg-pink-600 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(255,42,133,0.4)] flex items-center">
+            <i class="bi bi-save mr-2"></i> Guardar Rutina
+        </button>
+    </div>
+
+    <!-- Título Principal -->
+    <h1 class="text-3xl md:text-4xl font-black text-white uppercase tracking-tight mb-8" style="text-shadow: 0 0 15px rgba(213,0,249,0.5);">
+        Constructor de Rutina
+    </h1>
+
+    <div id="error-alert" class="hidden mb-6 bg-red-500/20 border border-red-500 text-red-100 px-4 py-3 rounded-lg flex items-center gap-3">
+        <i class="bi bi-exclamation-triangle-fill text-red-500 text-xl"></i>
+        <span id="error-message">Error general</span>
+    </div>
+
+    <!-- Paso 1: Configuración del Mesociclo -->
+    <div class="glass-panel p-6 mb-8 rounded-2xl border border-white/10">
+        <h3 class="text-xl font-bold text-white mb-4 border-b border-white/10 pb-2"><i class="bi bi-gear mr-2 text-neon-pink"></i> Configuración General</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <label class="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wide">Nombre del Plan *</label>
+                <input type="text" id="mesociclo-nombre" class="w-full bg-black/50 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink transition-all" placeholder="Ej: Hipertrofia Glúteos">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wide">Semanas de Duración *</label>
+                <select id="mesociclo-duracion" class="w-full bg-black/50 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink transition-all appearance-none">
+                    <option value="4">4 Semanas (1 Mes)</option>
+                    <option value="8">8 Semanas (2 Meses)</option>
+                    <option value="12" selected>12 Semanas (3 Meses)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wide">Coach Asignado</label>
+                <select id="mesociclo-coach" class="w-full bg-black/50 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink transition-all appearance-none">
+                    <option value="">-- Seleccionar Coach --</option>
+                    {% for coach in coaches %}
+                    <option value="{{ coach.id }}">{{ coach.nombre_completo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paso 2: Constructor de Días y Ejercicios -->
+    <div class="glass-panel p-6 rounded-2xl border border-white/10">
+        <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+            <h3 class="text-xl font-bold text-white"><i class="bi bi-calendar-week mr-2 text-neon-pink"></i> Días de Entrenamiento</h3>
+            <button id="btn-add-day" class="text-sm bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg border border-white/10 transition-colors flex items-center">
+                <i class="bi bi-plus-lg mr-1"></i> Añadir Día
+            </button>
+        </div>
+
+        <div id="days-container" class="space-y-8">
+            <!-- Los días se inyectarán aquí vía JS -->
+        </div>
+    </div>
+</div>
+
+<!-- Template para un Día (Oculto) -->
+<template id="template-day">
+    <div class="day-card bg-black/30 border border-white/5 rounded-xl p-5 relative group transition-all duration-300 hover:border-white/10" data-day-index="{DAY_INDEX}">
+        <button type="button" class="btn-remove-day absolute top-4 right-4 text-gray-500 hover:text-red-500 transition-colors" title="Eliminar Día">
+            <i class="bi bi-trash text-lg"></i>
+        </button>
+        
+        <div class="flex flex-col md:flex-row md:items-center gap-4 mb-4 pr-10">
+            <div class="flex-shrink-0 flex items-center justify-center bg-gray-800 rounded-lg w-12 h-12 border border-white/10">
+                <span class="text-white font-bold day-number-display">{DAY_NUMBER}</span>
+            </div>
+            <div class="flex-grow">
+                <input type="text" class="day-enfoque w-full bg-transparent border-b border-gray-600 focus:border-neon-pink text-white text-lg font-bold px-2 py-1 focus:outline-none transition-colors" placeholder="Enfoque del Día (Ej. Piernas y Glúteos)">
+            </div>
+        </div>
+
+        <!-- Tabla de Ejercicios -->
+        <div class="overflow-x-auto rounded-lg border border-white/5 mt-4">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-900/50 border-b border-white/10">
+                        <th class="p-3 text-xs text-gray-400 font-bold uppercase tracking-wider w-12 text-center">#</th>
+                        <th class="p-3 text-xs text-gray-400 font-bold uppercase tracking-wider">Ejercicio</th>
+                        <th class="p-3 text-xs text-gray-400 font-bold uppercase tracking-wider">Detalles (Series/Reps)</th>
+                        <th class="p-3 text-xs text-gray-400 font-bold uppercase tracking-wider w-16"></th>
+                    </tr>
+                </thead>
+                <tbody class="exercises-tbody">
+                    <!-- Ejercicios inyectados aquí -->
+                </tbody>
+            </table>
+        </div>
+        
+        <button type="button" class="btn-add-exercise mt-3 text-sm text-neon-pink hover:text-pink-400 font-medium transition-colors flex items-center">
+            <i class="bi bi-plus-circle mr-1"></i> Añadir Ejercicio
+        </button>
+    </div>
+</template>
+
+<!-- Template para un Ejercicio (Oculto) -->
+<template id="template-exercise">
+    <tr class="exercise-row border-b border-white/5 hover:bg-white/5 transition-colors group">
+        <td class="p-2 text-center text-gray-600 font-medium exercise-number">
+            <i class="bi bi-grip-vertical cursor-grab hover:text-white"></i>
+        </td>
+        <td class="p-2">
+            <input type="text" class="exercise-name w-full bg-black/40 border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink transition-all" placeholder="Ej: Peso Muerto Sumo">
+        </td>
+        <td class="p-2">
+            <input type="text" class="exercise-details w-full bg-black/40 border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink transition-all" placeholder="Ej: 8 a 10 Reps series 4">
+        </td>
+        <td class="p-2 text-center">
+            <button type="button" class="btn-remove-exercise text-gray-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-1">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+<!-- CSRF Token para el fetch -->
+<input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    let dayCount = 0;
+    const daysContainer = document.getElementById('days-container');
+    const btnAddDay = document.getElementById('btn-add-day');
+    const btnSaveRoutine = document.getElementById('btn-save-routine');
+    const templateDay = document.getElementById('template-day').innerHTML;
+    const templateExercise = document.getElementById('template-exercise').innerHTML;
+    
+    // UI Helpers
+    const showError = (msg) => {
+        const alert = document.getElementById('error-alert');
+        document.getElementById('error-message').textContent = msg;
+        alert.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const hideError = () => {
+        document.getElementById('error-alert').classList.add('hidden');
+    };
+
+    // Funciones del Builder
+    const updateDayNumbers = () => {
+        const dayCards = document.querySelectorAll('.day-card');
+        dayCards.forEach((card, index) => {
+            const num = index + 1;
+            card.setAttribute('data-day-index', num);
+            card.querySelector('.day-number-display').textContent = num;
+        });
+        dayCount = dayCards.length;
+    };
+
+    const addDay = () => {
+        dayCount++;
+        const newDayHtml = templateDay.replace(/{DAY_INDEX}/g, dayCount).replace(/{DAY_NUMBER}/g, dayCount);
+        daysContainer.insertAdjacentHTML('beforeend', newDayHtml);
+        
+        const newCard = daysContainer.lastElementChild;
+        
+        // Evento eliminar día
+        newCard.querySelector('.btn-remove-day').addEventListener('click', () => {
+            newCard.remove();
+            updateDayNumbers();
+        });
+
+        // Evento añadir ejercicio
+        newCard.querySelector('.btn-add-exercise').addEventListener('click', () => {
+            addExerciseToDay(newCard);
+        });
+
+        // Añadir el primer ejercicio por defecto
+        addExerciseToDay(newCard);
+    };
+
+    const addExerciseToDay = (dayCard) => {
+        const tbody = dayCard.querySelector('.exercises-tbody');
+        tbody.insertAdjacentHTML('beforeend', templateExercise);
+        
+        const newRow = tbody.lastElementChild;
+        
+        // Evento eliminar ejercicio
+        newRow.querySelector('.btn-remove-exercise').addEventListener('click', () => {
+            newRow.remove();
+        });
+    };
+
+    // Inicializar con 1 día vacío
+    addDay();
+
+    // Listeners
+    btnAddDay.addEventListener('click', addDay);
+
+    btnSaveRoutine.addEventListener('click', async () => {
+        hideError();
+        
+        // Recopilar datos
+        const nombre = document.getElementById('mesociclo-nombre').value.trim();
+        const duracion = document.getElementById('mesociclo-duracion').value;
+        const coach_id = document.getElementById('mesociclo-coach').value;
+
+        if (!nombre) {
+            showError("El nombre del plan es obligatorio.");
+            return;
+        }
+
+        const dayCards = document.querySelectorAll('.day-card');
+        if (dayCards.length === 0) {
+            showError("Debes añadir al menos un día de entrenamiento.");
+            return;
+        }
+
+        let diasData = [];
+        let hasErrors = false;
+
+        dayCards.forEach(card => {
+            const numero = card.getAttribute('data-day-index');
+            const enfoque = card.querySelector('.day-enfoque').value.trim();
+            const exerciseRows = card.querySelectorAll('.exercise-row');
+            
+            if (!enfoque) {
+                hasErrors = true;
+                showError(`Falta el enfoque en el Día ${numero}.`);
+                return;
+            }
+
+            let ejerciciosData = [];
+            exerciseRows.forEach(row => {
+                const nombreEj = row.querySelector('.exercise-name').value.trim();
+                const detallesEj = row.querySelector('.exercise-details').value.trim();
+                
+                if (nombreEj) {
+                    ejerciciosData.push({
+                        nombre: nombreEj,
+                        detalles: detallesEj
+                    });
+                }
+            });
+
+            if (ejerciciosData.length === 0) {
+                hasErrors = true;
+                showError(`El Día ${numero} debe tener al menos un ejercicio.`);
+                return;
+            }
+
+            diasData.push({
+                numero: numero,
+                enfoque: enfoque,
+                ejercicios: ejerciciosData
+            });
+        });
+
+        if (hasErrors) return;
+
+        const payload = {
+            nombre: nombre,
+            duracion: duracion,
+            coach_id: coach_id || null,
+            dias: diasData
+        };
+
+        // UI Loading state
+        const originalBtnText = btnSaveRoutine.innerHTML;
+        btnSaveRoutine.innerHTML = '<i class="bi bi-hourglass-split mr-2 animate-spin"></i> Guardando...';
+        btnSaveRoutine.disabled = true;
+
+        try {
+            const csrfToken = document.getElementById('csrf-token').value;
+            const response = await fetch("{% url 'rutina_crear' cliente.id %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.status === 'success') {
+                // Redirigir al perfil de la rutina recién creada
+                window.location.href = "{% url 'rutina_cliente' cliente.id %}";
+            } else {
+                showError(result.message || 'Error al guardar la rutina.');
+                btnSaveRoutine.innerHTML = originalBtnText;
+                btnSaveRoutine.disabled = false;
+            }
+        } catch (error) {
+            showError("Hubo un error de conexión al intentar guardar.");
+            btnSaveRoutine.innerHTML = originalBtnText;
+            btnSaveRoutine.disabled = false;
+        }
+    });
+});
+</script>
+{% endblock %}
