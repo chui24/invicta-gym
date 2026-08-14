@@ -15,10 +15,10 @@ Si estás leyendo esto, acabas de ser inicializado en una nueva computadora para
 *   **Módulo Auditivo:** Narración de estatus de membresía cargado en JS.
 *   **Automatización de Pagos (Tasa BCV):** Raspado diario automático y corrección de un bug de recursión infinita en el scraper. La interfaz calcula automáticamente las renovaciones en Bs.
 
-### 2. Fase 3: Rutinas (Nuevo)
-*   **Constructor de Rutinas (Routine Builder):** Interfaz asíncrona en `rutina_crear.html` para diseñar mesociclos completos, asignar a entrenadores (Personal), configurar días (`DiaRutina`) y ejercicios (`EjercicioRutina`) atómicamente con JSON y AJAX sin recargar la página.
-*   **Lógica de Renderizado:** La vista del perfil de cliente identifica si tiene una rutina activa y adapta el diseño para mostrar la rutina cargada o un botón/estado vacío en caso de que no.
-*   **Importación de Excel (Validado):** Se estructuró y corrió satisfactoriamente un script interno de migración que extrae rutinas pre-hechas desde la plantilla Excel de la dueña del gimnasio ("mesociclo yuli.xlsx") y la guarda en BD (Este script se removió posteriormente del entorno local para mantener el proyecto limpio en Git).
+### 2. Fase 3: Rutinas (Constructor y Asignación Multi-Semanal)
+*   **Constructor Multi-Semanal Avanzado:** Interfaz asíncrona en `rutina_crear.html` para diseñar planes de hasta 12 semanas. Permite estructurar días y ejercicios (con campos desglosados para Series, Repeticiones y Peso Sugerido) utilizando Vanilla JS para persistencia temporal (estado `routineData`) antes del guardado.
+*   **Edición y Carga Dinámica:** El constructor no solo crea, sino que actúa como editor, capaz de precargar el JSON del mesociclo activo del cliente, permitiendo su modificación y reescritura.
+*   **Lógica de Renderizado por Semana:** La vista del perfil de cliente (`rutina_cliente.html`) identifica la rutina, filtra dinámicamente los días según la semana seleccionada (por query parameter o default cronológico) y renderiza los ejercicios asignados con placeholders inteligentes de peso prescrito.
 
 ### 3. Infraestructura y Estado del Repositorio
 *   **Entorno Dockerizado:** Totalmente configurado (`docker compose up --build -d`). 

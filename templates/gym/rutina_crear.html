@@ -3,145 +3,187 @@
 {% block title %}Crear Rutina para {{ cliente.nombre }} - Invicta Gym{% endblock %}
 
 {% block content %}
-<div class="w-full max-w-6xl mx-auto pb-12" id="routine-builder-app">
-    <!-- Encabezado y Navegación Básica -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <a href="{% url 'rutina_cliente' cliente.id %}" class="bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium py-2 px-4 rounded-full transition-all duration-300 border border-white/10 flex items-center mb-4 md:mb-0">
+<div class="w-full max-w-5xl mx-auto pb-12" id="routine-builder-app">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-8 relative">
+        <a href="{% url 'rutina_cliente' cliente.id %}" class="text-gray-400 hover:text-white transition-colors flex items-center text-sm">
             <i class="bi bi-arrow-left mr-2"></i> Cancelar
         </a>
-        <button id="btn-save-routine" class="bg-neon-pink hover:bg-pink-600 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(255,42,133,0.4)] flex items-center">
+        <h1 class="text-2xl md:text-3xl font-black text-white uppercase tracking-wider absolute left-1/2 transform -translate-x-1/2" style="text-shadow: 0 0 15px rgba(213,0,249,0.3);">
+            CONSTRUCTOR DE RUTINA
+        </h1>
+        <button id="btn-save-routine" class="bg-brand-accent hover:brightness-110 text-white font-bold py-2.5 px-6 rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(213,0,249,0.4)] flex items-center text-sm">
             <i class="bi bi-save mr-2"></i> Guardar Rutina
         </button>
     </div>
-
-    <!-- Título Principal -->
-    <h1 class="text-3xl md:text-4xl font-black text-white uppercase tracking-tight mb-8" style="text-shadow: 0 0 15px rgba(213,0,249,0.5);">
-        Constructor de Rutina
-    </h1>
 
     <div id="error-alert" class="hidden mb-6 bg-red-500/20 border border-red-500 text-red-100 px-4 py-3 rounded-lg flex items-center gap-3">
         <i class="bi bi-exclamation-triangle-fill text-red-500 text-xl"></i>
         <span id="error-message">Error general</span>
     </div>
 
-    <!-- Paso 1: Configuración del Mesociclo -->
-    <div class="glass-panel p-6 mb-8 rounded-2xl border border-white/10">
-        <h3 class="text-xl font-bold text-white mb-4 border-b border-white/10 pb-2"><i class="bi bi-gear mr-2 text-neon-pink"></i> Configuración General</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Configuración General -->
+    <div class="bg-gray-900/60 p-6 mb-6 rounded-xl border border-white/5">
+        <h3 class="text-lg font-bold text-white mb-6 flex items-center"><i class="bi bi-gear text-brand-accent mr-3"></i> Configuración General</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wide">Nombre del Plan *</label>
-                <input type="text" id="mesociclo-nombre" class="w-full bg-black/50 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink transition-all" placeholder="Ej: Hipertrofia Glúteos">
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Nombre del Plan *</label>
+                <input type="text" id="mesociclo-nombre" class="w-full bg-black/50 border border-white/5 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-brand-accent transition-colors" placeholder="Ej: Hipertrofia Glúteos">
             </div>
             <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wide">Semanas de Duración *</label>
-                <select id="mesociclo-duracion" class="w-full bg-black/50 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink transition-all appearance-none">
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Semanas de Duración *</label>
+                <select id="mesociclo-duracion" class="w-full bg-black/50 border border-white/5 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-brand-accent transition-colors appearance-none">
                     <option value="4">4 Semanas (1 Mes)</option>
                     <option value="8">8 Semanas (2 Meses)</option>
                     <option value="12" selected>12 Semanas (3 Meses)</option>
+                    <option value="16">16 Semanas (4 Meses)</option>
                 </select>
             </div>
-            <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wide">Coach Asignado</label>
-                <select id="mesociclo-coach" class="w-full bg-black/50 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink transition-all appearance-none">
-                    <option value="">-- Seleccionar Coach --</option>
-                    {% for coach in coaches %}
-                    <option value="{{ coach.id }}">{{ coach.nombre_completo }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+        </div>
+        <div>
+            <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Coach Asignado</label>
+            <select id="mesociclo-coach" class="w-full bg-black/50 border border-white/5 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-brand-accent transition-colors appearance-none">
+                <option value="">-- Seleccionar Coach --</option>
+                {% for coach in coaches %}
+                <option value="{{ coach.id }}">{{ coach.nombre_completo }}</option>
+                {% endfor %}
+            </select>
         </div>
     </div>
 
-    <!-- Paso 2: Constructor de Días y Ejercicios -->
-    <div class="glass-panel p-6 rounded-2xl border border-white/10">
-        <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-            <h3 class="text-xl font-bold text-white"><i class="bi bi-calendar-week mr-2 text-neon-pink"></i> Días de Entrenamiento</h3>
-            <button id="btn-add-day" class="text-sm bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg border border-white/10 transition-colors flex items-center">
-                <i class="bi bi-plus-lg mr-1"></i> Añadir Día
+    <!-- Programación Semanal -->
+    <div class="bg-gray-900/60 p-6 rounded-xl border border-white/5">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-bold text-white flex items-center"><i class="bi bi-calendar-week text-brand-accent mr-3"></i> Programación Semanal</h3>
+            <button id="btn-add-day" class="text-sm bg-transparent border border-white/10 hover:border-brand-accent/50 text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                <i class="bi bi-plus-lg mr-2"></i> Añadir Día a la Semana
             </button>
         </div>
 
-        <div id="days-container" class="space-y-8">
-            <!-- Los días se inyectarán aquí vía JS -->
+        <div class="mb-8">
+            <label class="block text-xs font-bold text-gray-500 mb-4 uppercase tracking-wide">Seleccionar Semana</label>
+            <div id="weeks-tabs" class="flex flex-wrap gap-2">
+                <!-- Tabs generados por JS -->
+            </div>
+        </div>
+
+        <div id="days-container" class="space-y-6">
+            <!-- Días inyectados aquí vía JS para la semana activa -->
         </div>
     </div>
 </div>
 
-<!-- Template para un Día (Oculto) -->
+<!-- Template para Pestaña de Semana -->
+<template id="template-week-tab">
+    <button type="button" class="week-tab px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-black/40 text-gray-400 hover:bg-white/10 border border-transparent" data-week="{WEEK_NUM}">
+        Semana {WEEK_NUM}
+    </button>
+</template>
+
+<!-- Template para un Día -->
 <template id="template-day">
-    <div class="day-card bg-black/30 border border-white/5 rounded-xl p-5 relative group transition-all duration-300 hover:border-white/10" data-day-index="{DAY_INDEX}">
-        <button type="button" class="btn-remove-day absolute top-4 right-4 text-gray-500 hover:text-red-500 transition-colors" title="Eliminar Día">
-            <i class="bi bi-trash text-lg"></i>
-        </button>
-        
-        <div class="flex flex-col md:flex-row md:items-center gap-4 mb-4 pr-10">
-            <div class="flex-shrink-0 flex items-center justify-center bg-gray-800 rounded-lg w-12 h-12 border border-white/10">
-                <span class="text-white font-bold day-number-display">{DAY_NUMBER}</span>
+    <div class="day-card bg-black/40 rounded-xl border border-white/5 overflow-hidden" data-day-id="{DAY_ID}">
+        <!-- Header del Día -->
+        <div class="flex items-center p-4 bg-gray-800/50">
+            <div class="w-10 h-10 rounded bg-white/5 flex items-center justify-center text-gray-400 font-bold mr-4 day-number-display">
+                {DAY_NUMBER}
             </div>
-            <div class="flex-grow">
-                <input type="text" class="day-enfoque w-full bg-transparent border-b border-gray-600 focus:border-neon-pink text-white text-lg font-bold px-2 py-1 focus:outline-none transition-colors" placeholder="Enfoque del Día (Ej. Piernas y Glúteos)">
-            </div>
+            <input type="text" class="day-enfoque flex-grow bg-transparent border-none text-white text-base font-medium focus:outline-none placeholder-gray-600" placeholder="Ej: Piernas y Glúteos">
+            <button type="button" class="btn-remove-day text-gray-500 hover:text-red-500 p-2 ml-2 transition-colors">
+                <i class="bi bi-trash"></i>
+            </button>
         </div>
 
         <!-- Tabla de Ejercicios -->
-        <div class="overflow-x-auto rounded-lg border border-white/5 mt-4">
-            <table class="w-full text-left border-collapse">
+        <div class="p-4">
+            <table class="w-full text-left mb-2">
                 <thead>
-                    <tr class="bg-gray-900/50 border-b border-white/10">
-                        <th class="p-3 text-xs text-gray-400 font-bold uppercase tracking-wider w-12 text-center">#</th>
-                        <th class="p-3 text-xs text-gray-400 font-bold uppercase tracking-wider">Ejercicio</th>
-                        <th class="p-3 text-xs text-gray-400 font-bold uppercase tracking-wider">Detalles (Series/Reps)</th>
-                        <th class="p-3 text-xs text-gray-400 font-bold uppercase tracking-wider w-16"></th>
+                    <tr>
+                        <th class="py-2 px-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest w-10">#</th>
+                        <th class="py-2 px-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest">Ejercicio</th>
+                        <th class="py-2 px-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest w-24">Series</th>
+                        <th class="py-2 px-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest w-24">Reps</th>
+                        <th class="py-2 px-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest w-32">Peso Sugerido</th>
+                        <th class="w-10"></th>
                     </tr>
                 </thead>
                 <tbody class="exercises-tbody">
-                    <!-- Ejercicios inyectados aquí -->
+                    <!-- Ejercicios -->
                 </tbody>
             </table>
+            
+            <button type="button" class="btn-add-exercise text-sm text-brand-accent hover:text-white transition-colors flex items-center mt-2 px-3">
+                <i class="bi bi-plus-circle mr-2"></i> Añadir Ejercicio
+            </button>
         </div>
-        
-        <button type="button" class="btn-add-exercise mt-3 text-sm text-neon-pink hover:text-pink-400 font-medium transition-colors flex items-center">
-            <i class="bi bi-plus-circle mr-1"></i> Añadir Ejercicio
-        </button>
     </div>
 </template>
 
-<!-- Template para un Ejercicio (Oculto) -->
+<!-- Template para un Ejercicio -->
 <template id="template-exercise">
-    <tr class="exercise-row border-b border-white/5 hover:bg-white/5 transition-colors group">
-        <td class="p-2 text-center text-gray-600 font-medium exercise-number">
-            <i class="bi bi-grip-vertical cursor-grab hover:text-white"></i>
+    <tr class="exercise-row group">
+        <td class="p-2">
+            <i class="bi bi-grip-vertical text-gray-600 cursor-grab"></i>
         </td>
         <td class="p-2">
-            <input type="text" class="exercise-name w-full bg-black/40 border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink transition-all" placeholder="Ej: Peso Muerto Sumo">
+            <input type="text" class="exercise-name w-full bg-black/50 border border-white/5 text-gray-300 text-sm rounded-md px-3 py-2.5 focus:outline-none focus:border-brand-accent transition-colors" placeholder="Ej: Peso Muerto">
         </td>
         <td class="p-2">
-            <input type="text" class="exercise-details w-full bg-black/40 border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink transition-all" placeholder="Ej: 8 a 10 Reps series 4">
+            <input type="text" class="exercise-series w-full bg-black/50 border border-white/5 text-gray-300 text-sm rounded-md px-3 py-2.5 focus:outline-none focus:border-brand-accent transition-colors text-center" placeholder="Ej: 4">
+        </td>
+        <td class="p-2">
+            <input type="text" class="exercise-details w-full bg-black/50 border border-white/5 text-gray-300 text-sm rounded-md px-3 py-2.5 focus:outline-none focus:border-brand-accent transition-colors text-center" placeholder="Ej: 10-12">
+        </td>
+        <td class="p-2">
+            <input type="text" class="exercise-peso w-full bg-black/50 border border-white/5 text-gray-300 text-sm rounded-md px-3 py-2.5 focus:outline-none focus:border-brand-accent transition-colors text-center" placeholder="Ej: 10kg">
         </td>
         <td class="p-2 text-center">
-            <button type="button" class="btn-remove-exercise text-gray-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-1">
+            <button type="button" class="btn-remove-exercise text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
                 <i class="bi bi-x-lg"></i>
             </button>
         </td>
     </tr>
 </template>
 
-<!-- CSRF Token para el fetch -->
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    let dayCount = 0;
+    // ESTADO DE LA APLICACIÓN
+    // Estructura: routineData = { 1: [ { id: 'd1', enfoque: '', ejercicios: [ {id: 'e1', nombre: '', detalles: ''} ] } ], 2: [] }
+    let routineData = {};
+    let activeWeek = 1;
+    let durationWeeks = 12;
+
+    const preloadedDataStr = `{{ rutina_activa_json|default:"null"|safe }}`;
+    let preloadedData = null;
+    if (preloadedDataStr !== 'null' && preloadedDataStr !== '') {
+        try {
+            preloadedData = JSON.parse(preloadedDataStr);
+            durationWeeks = preloadedData.duracion;
+        } catch (e) {
+            console.error("Error parsing preloaded data", e);
+        }
+    } else {
+        durationWeeks = parseInt(document.getElementById('mesociclo-duracion').value) || 12;
+    }
+
     const daysContainer = document.getElementById('days-container');
+    const weeksTabsContainer = document.getElementById('weeks-tabs');
     const btnAddDay = document.getElementById('btn-add-day');
     const btnSaveRoutine = document.getElementById('btn-save-routine');
+    const selectDuracion = document.getElementById('mesociclo-duracion');
+
+    const templateWeekTab = document.getElementById('template-week-tab').innerHTML;
     const templateDay = document.getElementById('template-day').innerHTML;
     const templateExercise = document.getElementById('template-exercise').innerHTML;
+
+    // Utilidades
+    const generateId = () => Math.random().toString(36).substr(2, 9);
     
-    // UI Helpers
     const showError = (msg) => {
         const alert = document.getElementById('error-alert');
         document.getElementById('error-message').textContent = msg;
@@ -153,63 +195,175 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('error-alert').classList.add('hidden');
     };
 
-    // Funciones del Builder
-    const updateDayNumbers = () => {
-        const dayCards = document.querySelectorAll('.day-card');
-        dayCards.forEach((card, index) => {
+    // --- INICIALIZACIÓN ---
+    const initRoutineData = () => {
+        if (preloadedData && Object.keys(routineData).length === 0) {
+            // Inicializar con datos existentes
+            document.getElementById('mesociclo-nombre').value = preloadedData.nombre;
+            document.getElementById('mesociclo-duracion').value = preloadedData.duracion;
+            document.getElementById('mesociclo-coach').value = preloadedData.coach_id;
+            
+            for (let i = 1; i <= durationWeeks; i++) {
+                routineData[i] = [];
+            }
+            
+            preloadedData.dias.forEach(d => {
+                if(routineData[d.semana]) {
+                    routineData[d.semana].push({
+                        id: d.id,
+                        enfoque: d.enfoque,
+                        ejercicios: d.ejercicios
+                    });
+                }
+            });
+            // Una vez cargados, limpiamos preloaded para que los cambios de dropdown funcionen normal
+            preloadedData = null;
+        } else {
+            // Asegurar que todas las semanas existan en el objeto
+            for (let i = 1; i <= durationWeeks; i++) {
+                if (!routineData[i]) {
+                    routineData[i] = [];
+                }
+            }
+            // Limpiar semanas sobrantes si se reduce la duración
+            Object.keys(routineData).forEach(key => {
+                if (parseInt(key) > durationWeeks) delete routineData[key];
+            });
+        }
+    };
+
+    const renderWeekTabs = () => {
+        weeksTabsContainer.innerHTML = '';
+        for (let i = 1; i <= durationWeeks; i++) {
+            const tabHtml = templateWeekTab.replace(/{WEEK_NUM}/g, i);
+            weeksTabsContainer.insertAdjacentHTML('beforeend', tabHtml);
+            const btn = weeksTabsContainer.lastElementChild;
+            
+            // Estilo Activo
+            if (i === activeWeek) {
+                btn.classList.remove('bg-black/40', 'text-gray-400');
+                btn.classList.add('bg-brand-accent', 'text-white', 'shadow-[0_0_10px_rgba(213,0,249,0.5)]');
+            }
+            
+            btn.addEventListener('click', () => {
+                saveCurrentWeekState(); // Guardar lo que el usuario escribió
+                activeWeek = i;
+                renderWeekTabs();
+                renderActiveWeekDays();
+            });
+        }
+    };
+
+    const saveCurrentWeekState = () => {
+        if (!routineData[activeWeek]) return;
+        
+        const dayCards = daysContainer.querySelectorAll('.day-card');
+        routineData[activeWeek] = []; // Resetear para leer todo nuevo
+        
+        dayCards.forEach(card => {
+            const dayId = card.getAttribute('data-day-id');
+            const enfoque = card.querySelector('.day-enfoque').value;
+            
+            const ejercicios = [];
+            card.querySelectorAll('.exercise-row').forEach(row => {
+                ejercicios.push({
+                    nombre: row.querySelector('.exercise-name').value,
+                    series: row.querySelector('.exercise-series').value,
+                    detalles: row.querySelector('.exercise-details').value,
+                    peso: row.querySelector('.exercise-peso').value
+                });
+            });
+            
+            routineData[activeWeek].push({
+                id: dayId,
+                enfoque: enfoque,
+                ejercicios: ejercicios
+            });
+        });
+    };
+
+    const renderActiveWeekDays = () => {
+        daysContainer.innerHTML = '';
+        const days = routineData[activeWeek] || [];
+        
+        if (days.length === 0) {
+            // Si está vacío, le regalamos un día por defecto
+            const defaultDay = { id: generateId(), enfoque: '', ejercicios: [ {nombre: '', series: '', detalles: '', peso: ''} ] };
+            routineData[activeWeek].push(defaultDay);
+            days.push(defaultDay);
+        }
+
+        days.forEach((day, index) => {
             const num = index + 1;
-            card.setAttribute('data-day-index', num);
-            card.querySelector('.day-number-display').textContent = num;
+            let dayHtml = templateDay.replace(/{DAY_ID}/g, day.id).replace(/{DAY_NUMBER}/g, num);
+            daysContainer.insertAdjacentHTML('beforeend', dayHtml);
+            
+            const newCard = daysContainer.lastElementChild;
+            newCard.querySelector('.day-enfoque').value = day.enfoque;
+            
+            // Llenar ejercicios
+            const tbody = newCard.querySelector('.exercises-tbody');
+            day.ejercicios.forEach(ej => {
+                tbody.insertAdjacentHTML('beforeend', templateExercise);
+                const newRow = tbody.lastElementChild;
+                newRow.querySelector('.exercise-name').value = ej.nombre || '';
+                newRow.querySelector('.exercise-series').value = ej.series || '';
+                newRow.querySelector('.exercise-details').value = ej.detalles || '';
+                newRow.querySelector('.exercise-peso').value = ej.peso || '';
+                
+                // Evento eliminar ejercicio
+                newRow.querySelector('.btn-remove-exercise').addEventListener('click', () => {
+                    newRow.remove();
+                    saveCurrentWeekState();
+                });
+            });
+
+            // Evento añadir ejercicio
+            newCard.querySelector('.btn-add-exercise').addEventListener('click', () => {
+                tbody.insertAdjacentHTML('beforeend', templateExercise);
+                const freshRow = tbody.lastElementChild;
+                freshRow.querySelector('.btn-remove-exercise').addEventListener('click', () => {
+                    freshRow.remove();
+                    saveCurrentWeekState();
+                });
+            });
+
+            // Evento eliminar día
+            newCard.querySelector('.btn-remove-day').addEventListener('click', () => {
+                newCard.remove();
+                saveCurrentWeekState();
+                renderActiveWeekDays(); // Re-render para reenumerar
+            });
         });
-        dayCount = dayCards.length;
     };
 
-    const addDay = () => {
-        dayCount++;
-        const newDayHtml = templateDay.replace(/{DAY_INDEX}/g, dayCount).replace(/{DAY_NUMBER}/g, dayCount);
-        daysContainer.insertAdjacentHTML('beforeend', newDayHtml);
-        
-        const newCard = daysContainer.lastElementChild;
-        
-        // Evento eliminar día
-        newCard.querySelector('.btn-remove-day').addEventListener('click', () => {
-            newCard.remove();
-            updateDayNumbers();
+    // Eventos Globales
+    selectDuracion.addEventListener('change', (e) => {
+        saveCurrentWeekState();
+        durationWeeks = parseInt(e.target.value);
+        if (activeWeek > durationWeeks) activeWeek = durationWeeks;
+        initRoutineData();
+        renderWeekTabs();
+        renderActiveWeekDays();
+    });
+
+        btnAddDay.addEventListener('click', () => {
+        saveCurrentWeekState();
+        routineData[activeWeek].push({
+            id: generateId(),
+            enfoque: '',
+            ejercicios: [{nombre:'', series:'', detalles:'', peso:''}]
         });
+        renderActiveWeekDays();
+    });
 
-        // Evento añadir ejercicio
-        newCard.querySelector('.btn-add-exercise').addEventListener('click', () => {
-            addExerciseToDay(newCard);
-        });
-
-        // Añadir el primer ejercicio por defecto
-        addExerciseToDay(newCard);
-    };
-
-    const addExerciseToDay = (dayCard) => {
-        const tbody = dayCard.querySelector('.exercises-tbody');
-        tbody.insertAdjacentHTML('beforeend', templateExercise);
-        
-        const newRow = tbody.lastElementChild;
-        
-        // Evento eliminar ejercicio
-        newRow.querySelector('.btn-remove-exercise').addEventListener('click', () => {
-            newRow.remove();
-        });
-    };
-
-    // Inicializar con 1 día vacío
-    addDay();
-
-    // Listeners
-    btnAddDay.addEventListener('click', addDay);
-
+    // Guardar Rutina
     btnSaveRoutine.addEventListener('click', async () => {
         hideError();
+        saveCurrentWeekState(); 
         
-        // Recopilar datos
         const nombre = document.getElementById('mesociclo-nombre').value.trim();
-        const duracion = document.getElementById('mesociclo-duracion').value;
+        const duracion = selectDuracion.value;
         const coach_id = document.getElementById('mesociclo-coach').value;
 
         if (!nombre) {
@@ -217,62 +371,63 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const dayCards = document.querySelectorAll('.day-card');
-        if (dayCards.length === 0) {
-            showError("Debes añadir al menos un día de entrenamiento.");
-            return;
-        }
-
-        let diasData = [];
+        let diasFlatData = [];
         let hasErrors = false;
 
-        dayCards.forEach(card => {
-            const numero = card.getAttribute('data-day-index');
-            const enfoque = card.querySelector('.day-enfoque').value.trim();
-            const exerciseRows = card.querySelectorAll('.exercise-row');
+        // Validar y aplanar datos
+        for (let semana = 1; semana <= durationWeeks; semana++) {
+            const diasSemana = routineData[semana] || [];
             
-            if (!enfoque) {
-                hasErrors = true;
-                showError(`Falta el enfoque en el Día ${numero}.`);
-                return;
-            }
-
-            let ejerciciosData = [];
-            exerciseRows.forEach(row => {
-                const nombreEj = row.querySelector('.exercise-name').value.trim();
-                const detallesEj = row.querySelector('.exercise-details').value.trim();
-                
-                if (nombreEj) {
-                    ejerciciosData.push({
-                        nombre: nombreEj,
-                        detalles: detallesEj
-                    });
+            diasSemana.forEach((dia, idx) => {
+                const numero = idx + 1;
+                if (!dia.enfoque.trim()) {
+                    hasErrors = true;
+                    showError(`Falta el enfoque en el Día ${numero} de la Semana ${semana}.`);
+                    return;
                 }
-            });
+                
+                let ejerciciosData = [];
+                dia.ejercicios.forEach(ej => {
+                    if (ej.nombre.trim()) {
+                        ejerciciosData.push({
+                            nombre: ej.nombre.trim(),
+                            series: ej.series ? ej.series.trim() : '',
+                            detalles: ej.detalles ? ej.detalles.trim() : '',
+                            peso: ej.peso ? ej.peso.trim() : ''
+                        });
+                    }
+                });
 
-            if (ejerciciosData.length === 0) {
-                hasErrors = true;
-                showError(`El Día ${numero} debe tener al menos un ejercicio.`);
-                return;
-            }
+                if (ejerciciosData.length === 0) {
+                    hasErrors = true;
+                    showError(`El Día ${numero} de la Semana ${semana} debe tener al menos un ejercicio.`);
+                    return;
+                }
 
-            diasData.push({
-                numero: numero,
-                enfoque: enfoque,
-                ejercicios: ejerciciosData
+                diasFlatData.push({
+                    semana: semana,
+                    numero: numero,
+                    enfoque: dia.enfoque.trim(),
+                    ejercicios: ejerciciosData
+                });
             });
-        });
+        }
 
         if (hasErrors) return;
 
+        if (diasFlatData.length === 0) {
+            showError("Debes configurar al menos un día de entrenamiento en alguna semana.");
+            return;
+        }
+
         const payload = {
+            mesociclo_id: '{{ rutina_activa_json|default:"null"|safe }}' !== 'null' ? JSON.parse('{{ rutina_activa_json|safe }}').id : null,
             nombre: nombre,
             duracion: duracion,
             coach_id: coach_id || null,
-            dias: diasData
+            dias: diasFlatData
         };
 
-        // UI Loading state
         const originalBtnText = btnSaveRoutine.innerHTML;
         btnSaveRoutine.innerHTML = '<i class="bi bi-hourglass-split mr-2 animate-spin"></i> Guardando...';
         btnSaveRoutine.disabled = true;
@@ -291,7 +446,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (response.ok && result.status === 'success') {
-                // Redirigir al perfil de la rutina recién creada
                 window.location.href = "{% url 'rutina_cliente' cliente.id %}";
             } else {
                 showError(result.message || 'Error al guardar la rutina.');
@@ -304,6 +458,11 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSaveRoutine.disabled = false;
         }
     });
+
+    // Boot
+    initRoutineData();
+    renderWeekTabs();
+    renderActiveWeekDays();
 });
 </script>
 {% endblock %}

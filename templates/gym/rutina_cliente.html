@@ -9,11 +9,17 @@
         <a href="{% url 'cliente_list' %}" class="bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium py-2 px-4 rounded-full transition-all duration-300 border border-white/10 flex items-center mb-4 md:mb-0">
             <i class="bi bi-arrow-left mr-2"></i> Volver a Clientes
         </a>
+        
+        {% if mesociclo %}
+        <a href="{% url 'rutina_crear' cliente.id %}" class="bg-brand-accent hover:brightness-110 text-white text-sm font-bold py-2 px-5 rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(213,0,249,0.4)] flex items-center">
+            <i class="bi bi-pencil-fill mr-2"></i> Editar Rutina
+        </a>
+        {% endif %}
     </div>
 
     <!-- Título Principal -->
-    <h1 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tight mb-4" style="text-shadow: 0 0 15px rgba(213,0,249,0.5);">
-        RUTINA DE {{ cliente.nombre }}
+    <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white uppercase tracking-tight mb-8">
+        RUTINA DE <span class="text-brand-accent drop-shadow-[0_0_15px_rgba(213,0,249,0.5)]">{{ cliente.nombre }}</span>
     </h1>
 
     <!-- Subtítulos de Metadatos -->
@@ -29,23 +35,23 @@
     </div>
 
     <!-- Barra de Progreso -->
-    <div class="bg-black/40 border border-white/5 rounded-2xl p-6 mb-10 shadow-lg">
+    <div class="bg-black/40 border border-white/5 rounded-xl p-5 mb-10 shadow-lg">
         <div class="flex justify-between items-center mb-3">
-            <span class="text-xs text-gray-400 font-bold uppercase tracking-widest">Progreso total del plan</span>
-            <span class="text-xs text-brand-light font-bold">{{ progreso_porcentaje }}% Completado</span>
+            <span class="text-base text-gray-200 font-bold tracking-wide">Progreso Total del Plan</span>
+            <span class="text-sm text-brand-light font-bold">{{ progreso_porcentaje }}% Completado</span>
         </div>
-        <div class="w-full bg-gray-900 rounded-full h-2.5 overflow-hidden">
-            <div class="bg-brand-accent h-2.5 rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(213,0,249,0.8)]" style="width: {{ progreso_porcentaje }}%"></div>
+        <div class="w-full bg-white/10 rounded-full h-2.5">
+            <div class="bg-brand-accent h-full rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(213,0,249,0.8)] relative" style="width: {{ progreso_porcentaje }}%"></div>
         </div>
     </div>
 
     <!-- Pestañas de Semanas (Scroll Horizontal) -->
-    <h3 class="text-lg font-bold text-white mb-4">Planificación del Entrenamiento</h3>
-    <div class="flex overflow-x-auto pb-4 mb-6 space-x-3 hide-scrollbar">
+    <h3 class="text-2xl font-bold text-white mb-5">Planificación del Entrenamiento</h3>
+    <div class="flex overflow-x-auto pb-4 mb-8 space-x-4 custom-scrollbar">
         {% for semana_idx in rango_semanas %}
-            <a href="?semana={{ semana_idx }}" class="flex-shrink-0 px-6 py-2 rounded-full border transition-all duration-300 font-medium text-sm
+            <a href="?semana={{ semana_idx }}" class="flex-shrink-0 px-8 py-3 rounded-full border transition-all duration-300 font-medium text-base
                 {% if semana_idx == semana_seleccionada %}
-                    bg-brand-accent/20 border-brand-accent text-brand-light shadow-[0_0_10px_rgba(213,0,249,0.3)]
+                    bg-brand-accent/20 border-brand-accent text-brand-light shadow-[0_0_12px_rgba(213,0,249,0.4)]
                 {% else %}
                     bg-transparent border-white/10 text-gray-400 hover:text-white hover:bg-white/5 hover:border-white/20
                 {% endif %}
@@ -56,28 +62,28 @@
     </div>
 
     <!-- Cuadrícula Semanal -->
-    <div class="grid grid-cols-2 md:grid-cols-7 gap-3 mb-10">
+    <div class="grid grid-cols-2 md:grid-cols-7 gap-4 mb-12">
         {% for dia in cuadricula %}
-            <a href="?semana={{ semana_seleccionada }}&dia={{ dia.numero_dia }}" class="block rounded-2xl p-4 flex flex-col items-center justify-center text-center transition-all duration-300 border
+            <a href="?semana={{ semana_seleccionada }}&dia={{ dia.numero_dia }}" class="block rounded-2xl p-5 flex flex-col items-center justify-center text-center transition-all duration-300 border
                 {% if dia.seleccionado %}
-                    bg-brand-accent/10 border-brand-accent shadow-[0_0_15px_rgba(213,0,249,0.4)]
+                    bg-brand-accent/10 border-brand-accent shadow-[0_0_18px_rgba(213,0,249,0.4)]
                 {% else %}
                     bg-black/40 border-white/5 hover:border-white/20 hover:bg-white/5
                 {% endif %}
             ">
-                <span class="text-[10px] text-gray-500 font-bold uppercase mb-1">Día {{ dia.numero_dia }}</span>
-                <span class="text-base font-bold text-white leading-none mb-3">{{ dia.fecha|date:"D d"|lower }}</span>
+                <span class="text-xs text-gray-400 font-bold uppercase mb-2">Día {{ dia.numero_dia }}</span>
+                <span class="text-xl md:text-2xl font-bold text-white leading-none mb-4">{{ dia.fecha|date:"D d"|lower }}</span>
                 
                 {% if dia.asistio %}
-                    <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 w-full truncate">
+                    <span class="text-xs font-bold px-3 py-1.5 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 w-full truncate">
                         REALIZADO
                     </span>
                 {% elif dia.seleccionado and dia.enfoque != 'Descanso' %}
-                     <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-brand-accent/20 text-brand-light border border-brand-accent/30 w-full truncate">
+                     <span class="text-xs font-bold px-3 py-1.5 rounded-full bg-brand-accent/20 text-brand-light border border-brand-accent/30 w-full truncate">
                         {{ dia.enfoque|truncatechars:12 }}
                     </span>
                 {% else %}
-                    <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-gray-800/50 text-gray-600 border border-white/5 w-full truncate">
+                    <span class="text-xs font-bold px-3 py-1.5 rounded-full bg-gray-800/50 text-gray-500 border border-white/5 w-full truncate">
                         PENDIENTE
                     </span>
                 {% endif %}
@@ -87,33 +93,33 @@
 
     <!-- Ejercicios del Día -->
     {% if dia_rutina_actual %}
-        <div class="flex items-center mb-6">
-            <h3 class="text-2xl font-bold text-white">
-                <span class="text-brand-accent mr-2">Día {{ dia_rutina_actual.numero_dia }}:</span> {{ dia_rutina_actual.enfoque }}
+        <div class="flex items-center mb-8">
+            <h3 class="text-3xl font-bold text-white">
+                <span class="text-brand-accent mr-3 drop-shadow-[0_0_8px_rgba(213,0,249,0.5)]">Día {{ dia_rutina_actual.numero_dia }}:</span> {{ dia_rutina_actual.enfoque }}
             </h3>
         </div>
 
-        <div class="bg-black/30 backdrop-blur-md rounded-2xl border border-white/5 overflow-hidden shadow-lg p-2 md:p-6">
+        <div class="bg-black/30 backdrop-blur-md rounded-2xl border border-white/5 overflow-hidden shadow-lg p-2 md:p-8">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="border-b border-white/10">
-                            <th class="p-4 text-xs text-gray-500 font-bold uppercase tracking-wider">Ejercicio</th>
-                            <th class="p-4 text-xs text-gray-500 font-bold uppercase tracking-wider">Series</th>
-                            <th class="p-4 text-xs text-gray-500 font-bold uppercase tracking-wider">Repeticiones</th>
-                            <th class="p-4 text-xs text-gray-500 font-bold uppercase tracking-wider w-56 text-right">Peso (Registrado)</th>
+                            <th class="p-5 text-sm text-gray-500 font-black uppercase tracking-widest">Ejercicio</th>
+                            <th class="p-5 text-sm text-gray-500 font-black uppercase tracking-widest">Series</th>
+                            <th class="p-5 text-sm text-gray-500 font-black uppercase tracking-widest">Repeticiones</th>
+                            <th class="p-5 text-sm text-gray-500 font-black uppercase tracking-widest w-64 text-right">Peso (Registrado)</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in ejercicios_con_progresion %}
                         <tr class="border-b border-white/5 hover:bg-white/5 transition-colors group">
-                            <td class="p-4 text-white text-sm font-medium">{{ item.ejercicio.nombre_ejercicio }}</td>
-                            <td class="p-4 text-gray-400 text-sm">{{ item.ejercicio.series }}</td>
-                            <td class="p-4 text-gray-400 text-sm">{{ item.ejercicio.repeticiones }}</td>
-                            <td class="p-4 text-right">
+                            <td class="p-5 text-white text-base font-bold">{{ item.ejercicio.nombre_ejercicio }}</td>
+                            <td class="p-5 text-gray-400 text-base font-medium">{{ item.ejercicio.series }}</td>
+                            <td class="p-5 text-gray-400 text-base font-medium">{{ item.ejercicio.repeticiones }}</td>
+                            <td class="p-5 text-right">
                                 <input type="text" 
-                                       class="w-full md:w-48 bg-black border border-white/10 text-white text-sm rounded-lg px-4 py-2 focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all duration-300 placeholder-gray-700 peso-input text-right" 
-                                       placeholder="Ej: 10kg, 6 placas..." 
+                                       class="w-full md:w-56 bg-black/60 border border-white/10 text-white text-base font-medium rounded-xl px-5 py-3 focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all duration-300 placeholder-gray-600 peso-input text-right" 
+                                       placeholder="{{ item.ejercicio.peso_asignado|default:'Ej: 10kg, 6 placas...' }}" 
                                        data-ejercicio-id="{{ item.ejercicio.id }}"
                                        value="{{ item.peso_registrado }}">
                             </td>
@@ -128,7 +134,7 @@
             </div>
         </div>
         
-        <p class="text-[11px] text-gray-600 mt-6 text-center font-medium"><i class="bi bi-info-circle mr-1"></i> Los pesos se guardan automáticamente al dejar de escribir.</p>
+        <p class="text-xs text-gray-500 mt-6 text-center font-medium"><i class="bi bi-info-circle mr-1"></i> Los pesos se guardan automáticamente al dejar de escribir.</p>
 
     {% else %}
         <div class="bg-black/30 backdrop-blur-md p-12 rounded-2xl border border-white/5 text-center shadow-lg">
@@ -138,19 +144,26 @@
         </div>
     {% endif %}
     {% else %}
-    <!-- Estado Vacío -->
-    <div class="glass-panel flex flex-col items-center justify-center p-12 text-center mt-6 h-64">
-        <i class="fas fa-dumbbell text-4xl text-neon-pink opacity-50 mb-4"></i>
-        <h3 class="text-xl font-bold text-gray-300 mb-2">Sin Rutina Activa</h3>
-        <p class="text-gray-400 mb-6 max-w-md">Este cliente aún no tiene un mesociclo de entrenamiento asignado o su plan ha expirado.</p>
-        
-        <div class="flex justify-center gap-4 w-full">
-            <a href="{% url 'rutina_crear' cliente.id %}" class="bg-neon-pink hover:bg-pink-600 text-white px-6 py-2 rounded-lg font-bold transition duration-300 shadow-[0_0_15px_rgba(255,42,133,0.4)] flex items-center gap-2">
-                <i class="fas fa-plus"></i> Crear Nueva Rutina
-            </a>
-            <button disabled class="bg-gray-800 text-gray-500 px-6 py-2 rounded-lg font-bold cursor-not-allowed border border-gray-700 flex items-center gap-2" title="Próximamente">
-                <i class="fas fa-file-excel"></i> Importar Excel
-            </button>
+    <!-- Diseño de Estado Vacío Centralizado (Sin Rutina Activa) -->
+    <div class="flex justify-center mt-12 mb-12">
+        <!-- Tarjeta Principal: Sin Rutina -->
+        <div class="w-full max-w-3xl bg-black/40 border border-white/5 rounded-2xl p-12 flex flex-col items-center text-center shadow-lg">
+            <div class="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                <i class="bi bi-clipboard2-plus text-5xl text-gray-400"></i>
+            </div>
+            <h2 class="text-4xl font-bold text-white mb-4 tracking-wide">Sin Rutina Activa</h2>
+            <p class="text-gray-400 mb-10 max-w-lg leading-relaxed text-base">
+                Este cliente aún no tiene un mesociclo de entrenamiento asignado o su plan anterior ha expirado.<br>
+                Inicia asignando una nueva rutina.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 mt-6 justify-center w-full">
+                <a href="{% url 'rutina_crear' cliente.id %}" class="bg-brand-accent hover:brightness-110 text-white px-8 py-3 rounded-lg font-bold uppercase text-xs tracking-widest transition duration-300 w-full sm:w-auto flex items-center justify-center shadow-[0_0_15px_rgba(213,0,249,0.4)]">
+                    Crear Nueva Rutina
+                </a>
+                <button class="bg-gray-900 border hover:border-brand-accent text-gray-300 hover:text-white px-8 py-3 rounded-lg font-bold uppercase text-xs tracking-widest transition duration-300 w-full sm:w-auto flex items-center justify-center" style="border-color: rgba(213,0,249,0.3);">
+                    Importar Excel
+                </button>
+            </div>
         </div>
     </div>
     {% endif %}
@@ -160,14 +173,25 @@
 <!-- CSRF Token para AJAX -->
 <form style="display:none;">{% csrf_token %}</form>
 
-<!-- Estilo extra para esconder la scrollbar en navegadores Webkit (Chrome, Safari) -->
+<!-- Estilo para scrollbar premium -->
 <style>
-    .hide-scrollbar::-webkit-scrollbar {
-        display: none;
+    .custom-scrollbar::-webkit-scrollbar {
+        height: 6px;
     }
-    .hide-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(213, 0, 249, 0.5); /* Neon pink/purple */
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(213, 0, 249, 0.8);
+    }
+    .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(213, 0, 249, 0.5) rgba(255, 255, 255, 0.05);
     }
 </style>
 {% endblock %}

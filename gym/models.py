@@ -201,11 +201,12 @@ class Mesociclo(models.Model):
 
 class DiaRutina(models.Model):
     mesociclo = models.ForeignKey(Mesociclo, on_delete=models.CASCADE, related_name='dias')
+    semana = models.IntegerField(default=1)
     numero_dia = models.IntegerField()
     enfoque = models.CharField(max_length=150)
     
     class Meta:
-        ordering = ['numero_dia']
+        ordering = ['semana', 'numero_dia']
     
     def __str__(self):
         return f"Día {self.numero_dia}: {self.enfoque} - {self.mesociclo.nombre}"
@@ -215,6 +216,7 @@ class EjercicioRutina(models.Model):
     nombre_ejercicio = models.CharField(max_length=150)
     series = models.CharField(max_length=50)
     repeticiones = models.CharField(max_length=100)
+    peso_asignado = models.CharField(max_length=50, blank=True, null=True)
     
     def __str__(self):
         return self.nombre_ejercicio

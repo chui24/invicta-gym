@@ -621,15 +621,26 @@ def rutina_crear(request, cliente_id):
                 if data.get('coach_id'):
                     coach = Personal.objects.filter(id=data['coach_id']).first()
                     
-                mesociclo = Mesociclo.objects.create(
-                    nombre=data.get('nombre', 'Rutina Personalizada'),
-                    duracion_semanas=int(data.get('duracion', 4)),
-                    coach=coach
-                )
+                mesociclo_id = data.get('mesociclo_id')
+                if mesociclo_id:
+                    mesociclo = Mesociclo.objects.get(id=mesociclo_id)
+                    mesociclo.nombre = data.get('nombre', 'Rutina Personalizada')
+                    mesociclo.duracion_semanas = int(data.get('duracion', 4))
+                    mesociclo.coach = coach
+                    mesociclo.save()
+                    # Borrar los días anteriores para recrearlos
+                    DiaRutina.objects.filter(mesociclo=mesociclo).delete()
+                else:
+                    mesociclo = Mesociclo.objects.create(
+                        nombre=data.get('nombre', 'Rutina Personalizada'),
+                        duracion_semanas=int(data.get('duracion', 4)),
+                        coach=coach
+                    )
                 
                 for dia_data in data.get('dias', []):
                     dia = DiaRutina.objects.create(
                         mesociclo=mesociclo,
+                        semana=int(dia_data.get('semana', 1)),
                         numero_dia=int(dia_data.get('numero', 1)),
                         enfoque=dia_data.get('enfoque', '')
                     )
@@ -638,22 +649,62 @@ def rutina_crear(request, cliente_id):
                         EjercicioRutina.objects.create(
                             dia_rutina=dia,
                             nombre_ejercicio=ej_data.get('nombre', ''),
-                            series='-',
-                            repeticiones=ej_data.get('detalles', '')
+                            series=ej_data.get('series', ''),
+                            repeticiones=ej_data.get('detalles', ''),
+                            peso_asignado=ej_data.get('peso', '')
                         )
                 
-                AsignacionCliente.objects.create(
-                    cliente=cliente,
-                    mesociclo=mesociclo,
-                    fecha_inicio=timezone.localdate()
-                )
+                if not mesociclo_id:
+                    AsignacionCliente.objects.create(
+                        cliente=cliente,
+                        mesociclo=mesociclo,
+                        fecha_inicio=timezone.localdate()
+                    )
                 
             return JsonResponse({'status': 'success', 'message': 'Rutina creada y asignada correctamente'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
             
+    import json
+    asignacion = AsignacionCliente.objects.filter(cliente=cliente).order_by('-fecha_inicio').first()
+    rutina_activa_json = None
+    
+    if asignacion and not request.GET.get('nueva'):
+        m = asignacion.mesociclo
+        rutina_activa_data = {
+            'id': m.id,
+            'nombre': m.nombre,
+            'duracion': m.duracion_semanas,
+            'coach_id': m.coach.id if m.coach else '',
+            'dias': []
+        }
+        
+        for d in m.dias.all():
+            dia_data = {
+                'id': f"d_{d.id}",
+                'semana': d.semana,
+                'numero': d.numero_dia,
+                'enfoque': d.enfoque,
+                'ejercicios': []
+            }
+            for e in d.ejercicios.all():
+                dia_data['ejercicios'].append({
+                    'id': f"e_{e.id}",
+                    'nombre': e.nombre_ejercicio,
+                    'series': e.series,
+                    'detalles': e.repeticiones,
+                    'peso': e.peso_asignado or ''
+                })
+            rutina_activa_data['dias'].append(dia_data)
+        
+        rutina_activa_json = json.dumps(rutina_activa_data)
+
     coaches = Personal.objects.exclude(cargo_especialidad__in=['Recepcionista', 'Gerencia'])
-    return render(request, 'gym/rutina_crear.html', {'cliente': cliente, 'coaches': coaches})
+    return render(request, 'gym/rutina_crear.html', {
+        'cliente': cliente, 
+        'coaches': coaches,
+        'rutina_activa_json': rutina_activa_json
+    })
 
 # --- FASE 3: RUTINAS Y PROGRESIÓN ---
 
@@ -671,8 +722,9 @@ def perfil_entrenamiento_cliente(request, cliente_id):
     fecha_inicio = asignacion.fecha_inicio
     hoy = timezone.localdate()
     
-    # Calcular semana cronológica actual (1-indexed)
-    dias_pasados = (hoy - fecha_inicio).days
+    # Calcular semana cronológica actual (1-indexed) basada en la semana calendario
+    lunes_inicio = fecha_inicio - timedelta(days=fecha_inicio.weekday())
+    dias_pasados = (hoy - lunes_inicio).days
     semana_cronologica = max(1, (dias_pasados // 7) + 1)
     if semana_cronologica > mesociclo.duracion_semanas:
         semana_cronologica = mesociclo.duracion_semanas
@@ -688,9 +740,9 @@ def perfil_entrenamiento_cliente(request, cliente_id):
     if dia_seleccionado and dia_seleccionado.isdigit():
         dia_seleccionado = int(dia_seleccionado)
     else:
-        dia_seleccionado = (dias_pasados % 7) + 1 # 1=Lunes, 7=Domingo
+        dia_seleccionado = hoy.weekday() + 1 # 1=Lunes, 7=Domingo
         if semana_seleccionada != semana_cronologica:
-            dia_seleccionado = 1 # Si cambia de semana, mostrar por defecto el día 1
+            dia_seleccionado = 1 # Si cambia de semana, mostrar Lunes por defecto
 
     # Calcular progreso total
     # Asumimos 5 días a la semana de entrenamiento en promedio.
@@ -703,7 +755,7 @@ def perfil_entrenamiento_cliente(request, cliente_id):
     rango_semanas = list(range(1, mesociclo.duracion_semanas + 1))
     
     # Calcular fechas de la semana seleccionada
-    inicio_semana_seleccionada = fecha_inicio + timedelta(days=(semana_seleccionada - 1) * 7)
+    inicio_semana_seleccionada = lunes_inicio + timedelta(days=(semana_seleccionada - 1) * 7)
     
     # Asistencias de esa semana para la cuadrícula
     asistencias_semana = Asistencia.objects.filter(
@@ -715,8 +767,8 @@ def perfil_entrenamiento_cliente(request, cliente_id):
 
     # Cuadrícula de 7 días
     cuadricula = []
-    # Precargar todos los días de rutina del mesociclo
-    dias_rutina_obj = {d.numero_dia: d for d in DiaRutina.objects.filter(mesociclo=mesociclo)}
+    # Precargar todos los días de rutina del mesociclo para la semana seleccionada
+    dias_rutina_obj = {d.numero_dia: d for d in DiaRutina.objects.filter(mesociclo=mesociclo, semana=semana_seleccionada)}
     
     for i in range(7):
         numero_dia = i + 1

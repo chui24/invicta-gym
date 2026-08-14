@@ -106,8 +106,8 @@ Debido a que el proyecto está en Docker, los comandos administrativos de Django
 *   **Logs:** `docker compose logs -f web` (Para ver errores de backend) o `docker compose logs -f tailwind` (Para ver la compilación de CSS).
 
 ### 4. Próximos Pasos (Roadmap)
-*   **Fase de Módulos (En Proceso):** Implementación gradual de características clave para el negocio (Gestores, Automatizaciones).
-*   **Control de Accesos:** Robustecer la lógica de autenticación y vistas protegidas.
+*   **Gestor de Nutrición (Fase 4):** Implementación de calculadoras de macros y asignación de dietas.
+*   **Control de Accesos Avanzado:** Robustecer la lógica de autenticación y vistas protegidas.
 *   **Optimización de Producción:** Cambiar el servidor de desarrollo (`runserver`) por `Gunicorn` u otro servidor WSGI/ASGI de producción cuando se decida desplegar.
 
 ---
@@ -138,6 +138,20 @@ Se optimizó la experiencia del usuario y se redujo la carga manual de cálculos
     *   **Scraper Inteligente:** Se desarrolló un script en `utils/bcv_scraper.py` (usando `BeautifulSoup` y `requests`) que extrae la tasa oficial del día directamente desde `bcv.org.ve`, tolerando fallos de SSL del servidor gubernamental.
     *   **Persistencia:** La tasa extraída se inyecta en el patrón Singleton del modelo `ConfiguracionSistema`. Además, se creó el comando administrativo `python manage.py actualizar_bcv` para que pueda ser ejecutado vía Cron-job diariamente.
     *   **Calculadora Dinámica (UI):** En la vista de Renovación (`renovacion_form.html`), se inyectaron los precios en USD desde el backend mediante un diccionario JSON. Una función en JavaScript detecta en tiempo real los cambios del `select` de Planes y multiplica la tarifa por la `tasa_bcv` actual, mostrando al recepcionista instantáneamente el *Total a Pagar en Bs* de forma clara con un diseño *Glow*.
-*   **Optimizaciones Visuales y Semánticas (UI/UX):**
-    *   **Pre-Alertas de Vencimiento:** Se modificó la lógica en el backend para pre-alertar a los clientes. Si a un cliente le faltan 3 días o menos para vencer, su estado cambia automáticamente a `Por vencer`, activando el color amarillo preventivo y el audio recordatorio.
     *   **Soporte JIT en Tailwind:** Se agregó la ruta `./static/js/**/*.js` al array `content` del archivo `tailwind.config.js`. Esto garantiza que los estilos generados dinámicamente desde JavaScript (como las clases amarillas de advertencia) sean leídos y compilados correctamente por Tailwind CSS para producción.
+
+### Fase 3: Constructor de Rutinas y Asignación Multi-Semanal (Completado)
+Se desarrolló el módulo central de planificación de entrenamiento para que los coaches puedan recetar rutinas a los clientes directamente desde la plataforma:
+
+*   **Constructor Multi-Semanal Dinámico (JS Engine):**
+    *   Se diseñó una interfaz sin recarga de página (Single Page Application feel) para el constructor de rutinas (`rutina_crear.html`). 
+    *   Soporta creación de **mesociclos desde 1 hasta 12+ semanas**, generando pestañas de navegación automáticas por semana.
+    *   El estado temporal (`routineData`) permite a los coaches cambiar entre pestañas de semanas sin perder la información cargada, consolidando todo en un payload JSON gigante que se envía atómicamente al backend al darle "Guardar".
+*   **Desglose Técnico de Ejercicios:**
+    *   Los campos de los ejercicios fueron separados para un nivel de detalle premium: `nombre`, `series`, `repeticiones`, y `peso_asignado`.
+*   **Edición Bidireccional:**
+    *   El módulo no solo permite crear rutinas nuevas, sino que funciona como editor. Al cargar un cliente con rutina activa, el backend envía el JSON preconfigurado y el script JavaScript reconstruye dinámicamente toda la vista (pestañas, días y ejercicios pre-llenados) para modificaciones rápidas.
+*   **Dashboard del Cliente (UI Premium):**
+    *   Se actualizó `rutina_cliente.html` siguiendo directrices de Glassmorphism oscuras y adaptadas de referencias premium (Stitch).
+    *   Incorpora navegación horizontal de pestañas para ver el plan de la semana.
+    *   El cliente puede visualizar el `peso sugerido` por el coach como placeholder, e interactuar con inputs directos para introducir su `peso levantado` real.
