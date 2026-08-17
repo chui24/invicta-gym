@@ -225,6 +225,7 @@ class AsignacionCliente(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='asignaciones')
     mesociclo = models.ForeignKey(Mesociclo, on_delete=models.CASCADE)
     fecha_inicio = models.DateField()
+    dias_activos = models.JSONField(default=list, help_text="Días de la semana seleccionados para entrenar (0=Lunes, 6=Domingo)")
     
     def __str__(self):
         return f"{self.cliente.nombre} - {self.mesociclo.nombre}"

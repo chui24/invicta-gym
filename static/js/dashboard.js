@@ -105,13 +105,36 @@ function mostrarPerfil(data) {
         if (actionContainer) actionContainer.style.display = 'flex';
     }
 
-    
     if (data.suscripcion) {
         document.getElementById('val_plan').textContent = data.suscripcion.plan;
         document.getElementById('val_vencimiento').textContent = data.suscripcion.fecha_vencimiento;
     } else {
         document.getElementById('val_plan').textContent = '-';
         document.getElementById('val_vencimiento').textContent = '-';
+    }
+
+    // Rutina Info
+    const rutinaContainer = document.getElementById('val_rutina_container');
+    const diaRutina = document.getElementById('val_dia_rutina');
+    const alertaRutina = document.getElementById('val_alerta_rutina');
+    const diaPerdido = document.getElementById('val_dia_perdido');
+
+    if (data.rutina && data.rutina.dia_hoy) {
+        rutinaContainer.style.display = 'block';
+        rutinaContainer.classList.remove('hidden');
+        diaRutina.textContent = data.rutina.dia_hoy;
+        
+        if (data.rutina.alerta_perdida) {
+            alertaRutina.style.display = 'flex';
+            alertaRutina.classList.remove('hidden');
+            diaPerdido.textContent = data.rutina.dia_perdido_nombre;
+        } else {
+            alertaRutina.style.display = 'none';
+            alertaRutina.classList.add('hidden');
+        }
+    } else if (rutinaContainer) {
+        rutinaContainer.style.display = 'none';
+        rutinaContainer.classList.add('hidden');
     }
 
     const msgEl = document.getElementById('val_mensaje');

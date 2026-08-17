@@ -217,6 +217,18 @@
                                     <p class="text-brand-muted text-base m-0 flex items-center"><span class="opacity-70 w-28 inline-block">Estado:</span> <span id="val_estado" class="text-white font-medium tracking-wide px-3 py-1 rounded-full text-sm border shadow-lg">-</span></p>
                                     <p class="text-brand-muted text-base m-0 flex"><span id="val_plan_label" class="opacity-70 w-28 inline-block">Rol / Plan:</span> <span id="val_plan" class="text-white font-medium tracking-wide">-</span></p>
                                     <p id="val_vence_container" class="text-brand-muted text-base m-0 flex"><span class="opacity-70 w-28 inline-block">Vence:</span> <span id="val_vencimiento" class="text-white font-medium tracking-wide">-</span></p>
+                                    
+                                    <!-- Información de Rutina -->
+                                    <div id="val_rutina_container" class="hidden pt-2 mt-2 border-t border-white/10">
+                                        <p class="text-brand-muted text-base m-0 flex items-center">
+                                            <span class="opacity-70 w-28 inline-block">Hoy:</span> 
+                                            <span id="val_dia_rutina" class="text-white font-medium tracking-wide bg-white/10 px-2 py-0.5 rounded text-sm">-</span>
+                                        </p>
+                                        <div id="val_alerta_rutina" class="hidden mt-3 bg-orange-500/20 border border-orange-500 text-orange-400 px-3 py-2 rounded-lg text-xs font-bold flex items-center shadow-[0_0_10px_rgba(249,115,22,0.3)]">
+                                            <i class="bi bi-exclamation-triangle-fill mr-2"></i>
+                                            <span>Atención: Faltó a su sesión anterior (<span id="val_dia_perdido"></span>)</span>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Botones de Acción (Estilo Imagen 1) -->

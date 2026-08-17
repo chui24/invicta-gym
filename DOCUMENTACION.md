@@ -143,14 +143,22 @@ Se optimizó la experiencia del usuario y se redujo la carga manual de cálculos
 ### Fase 3: Constructor de Rutinas y Asignación Multi-Semanal (Completado)
 Se desarrolló el módulo central de planificación de entrenamiento para que los coaches puedan recetar rutinas a los clientes directamente desde la plataforma:
 
+*   **Flexibilidad de Días y Mapeo Cronológico:**
+    *   La asignación del plan contempla `dias_activos` en formato JSON, permitiendo entrenamientos asíncronos en la semana (ej. `[1, 3, 5]` para Ma/Ju/Sa).
+    *   La base de datos `AsignacionCliente` almacena esta selección.
 *   **Constructor Multi-Semanal Dinámico (JS Engine):**
     *   Se diseñó una interfaz sin recarga de página (Single Page Application feel) para el constructor de rutinas (`rutina_crear.html`). 
     *   Soporta creación de **mesociclos desde 1 hasta 12+ semanas**, generando pestañas de navegación automáticas por semana.
     *   El estado temporal (`routineData`) permite a los coaches cambiar entre pestañas de semanas sin perder la información cargada, consolidando todo en un payload JSON gigante que se envía atómicamente al backend al darle "Guardar".
+    *   Se implementó una UI de selección de días activos a prueba de fallos, inyectando estilos de Hover y Active directamente usando selectores de Tailwind base, evadiendo fallos de compilación JIT.
 *   **Desglose Técnico de Ejercicios:**
     *   Los campos de los ejercicios fueron separados para un nivel de detalle premium: `nombre`, `series`, `repeticiones`, y `peso_asignado`.
 *   **Edición Bidireccional:**
-    *   El módulo no solo permite crear rutinas nuevas, sino que funciona como editor. Al cargar un cliente con rutina activa, el backend envía el JSON preconfigurado y el script JavaScript reconstruye dinámicamente toda la vista (pestañas, días y ejercicios pre-llenados) para modificaciones rápidas.
+    *   El módulo no solo permite crear rutinas nuevas, sino que funciona como editor. Al cargar un cliente con rutina activa, el backend envía el JSON preconfigurado y el script JavaScript reconstruye dinámicamente toda la vista (pestañas, días activos marcados y ejercicios pre-llenados) para modificaciones rápidas.
+*   **Alertas Biométricas de Inasistencia (Lookback Algorithm):**
+    *   En el endpoint biométrico (`validar_rostro`), se diseñó un motor de "viaje en el tiempo" que calcula, basándose en la `fecha_inicio` y los `dias_activos`, cuántos días hábiles de entrenamiento han transcurrido, proyectando exactamente en qué "Día N de Rutina" va el cliente.
+    *   El motor viaja al pasado en el calendario (máximo 7 días) para encontrar la última sesión agendada. Si el cliente no registra un *log* en `Asistencia` para ese día específico, inyecta una alerta silenciosa al Dashboard.
+    *   El Dashboard frontend intercepta esta señal y levanta un Badge Neón (`Naranja/Rojo`) advirtiendo al recepcionista de la inasistencia (Ej. *"Atención: Faltó a su sesión anterior (Miércoles)"*).
 *   **Dashboard del Cliente (UI Premium):**
     *   Se actualizó `rutina_cliente.html` siguiendo directrices de Glassmorphism oscuras y adaptadas de referencias premium (Stitch).
     *   Incorpora navegación horizontal de pestañas para ver el plan de la semana.

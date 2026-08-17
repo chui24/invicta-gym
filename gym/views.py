@@ -102,6 +102,57 @@ def validar_acceso_semaforo(request):
     ultimo_pago = suscripcion.pagos.order_by('-fecha_pago').first()
     metodo_pago_usual = ultimo_pago.metodo_pago if ultimo_pago else 'No registrado'
     
+    # --- LÓGICA DE RUTINA Y ALERTA DE INASISTENCIA ---
+    rutina_dia_str = ""
+    alerta_rutina_perdida = False
+    dia_perdido_nombre = ""
+    
+    asignacion = AsignacionCliente.objects.filter(cliente=cliente).order_by('-fecha_inicio').first()
+    if asignacion and asignacion.dias_activos:
+        dias_activos = asignacion.dias_activos
+        dia_semana_hoy = hoy.weekday() # 0 = Lunes, 6 = Domingo
+        
+        # 1. Determinar si hoy le toca
+        if dia_semana_hoy in dias_activos:
+            dias_transcurridos = (hoy - asignacion.fecha_inicio).days
+            if dias_transcurridos >= 0:
+                dias_entrenamiento_pasados = 0
+                for i in range(dias_transcurridos):
+                    d = asignacion.fecha_inicio + timedelta(days=i)
+                    if d.weekday() in dias_activos:
+                        dias_entrenamiento_pasados += 1
+                        
+                dia_rutina = dias_entrenamiento_pasados + 1
+                total_dias_mesociclo = asignacion.mesociclo.dias.count()
+                
+                if dia_rutina <= total_dias_mesociclo:
+                    rutina_dia_str = f"Rutina Día {dia_rutina}"
+                else:
+                    rutina_dia_str = "Mesociclo Completado"
+        
+        # 2. Alerta de Inasistencia (Lookback)
+        fecha_lookback = hoy - timedelta(days=1)
+        ultimo_dia_entrenamiento = None
+        
+        for _ in range(7):
+            if fecha_lookback < asignacion.fecha_inicio:
+                break
+            if fecha_lookback.weekday() in dias_activos:
+                ultimo_dia_entrenamiento = fecha_lookback
+                break
+            fecha_lookback -= timedelta(days=1)
+            
+        if ultimo_dia_entrenamiento:
+            asistencia_previa = Asistencia.objects.filter(
+                cliente=cliente, 
+                fecha_hora_entrada__date=ultimo_dia_entrenamiento
+            ).exists()
+            
+            if not asistencia_previa:
+                alerta_rutina_perdida = True
+                nombres_dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+                dia_perdido_nombre = nombres_dias[ultimo_dia_entrenamiento.weekday()]
+    
     data = {
         'status': 'success',
         'tipo': 'cliente',
@@ -119,6 +170,11 @@ def validar_acceso_semaforo(request):
             'fecha_inscripcion': suscripcion.fecha_inscripcion.strftime('%d/%m/%Y'),
             'fecha_vencimiento': vencimiento.strftime('%d/%m/%Y'),
             'metodo_pago_usual': metodo_pago_usual,
+        },
+        'rutina': {
+            'dia_hoy': rutina_dia_str,
+            'alerta_perdida': alerta_rutina_perdida,
+            'dia_perdido_nombre': dia_perdido_nombre
         }
     }
     
@@ -630,6 +686,11 @@ def rutina_crear(request, cliente_id):
                     mesociclo.save()
                     # Borrar los días anteriores para recrearlos
                     DiaRutina.objects.filter(mesociclo=mesociclo).delete()
+                    
+                    asignacion_existente = AsignacionCliente.objects.filter(mesociclo=mesociclo).first()
+                    if asignacion_existente:
+                        asignacion_existente.dias_activos = data.get('dias_activos', [])
+                        asignacion_existente.save()
                 else:
                     mesociclo = Mesociclo.objects.create(
                         nombre=data.get('nombre', 'Rutina Personalizada'),
@@ -658,7 +719,8 @@ def rutina_crear(request, cliente_id):
                     AsignacionCliente.objects.create(
                         cliente=cliente,
                         mesociclo=mesociclo,
-                        fecha_inicio=timezone.localdate()
+                        fecha_inicio=timezone.localdate(),
+                        dias_activos=data.get('dias_activos', [])
                     )
                 
             return JsonResponse({'status': 'success', 'message': 'Rutina creada y asignada correctamente'})
@@ -676,6 +738,7 @@ def rutina_crear(request, cliente_id):
             'nombre': m.nombre,
             'duracion': m.duracion_semanas,
             'coach_id': m.coach.id if m.coach else '',
+            'dias_activos': asignacion.dias_activos if asignacion else [],
             'dias': []
         }
         

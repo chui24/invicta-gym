@@ -41,7 +41,7 @@
                 </select>
             </div>
         </div>
-        <div>
+        <div class="mb-6">
             <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Coach Asignado</label>
             <select id="mesociclo-coach" class="w-full bg-black/50 border border-white/5 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-brand-accent transition-colors appearance-none">
                 <option value="">-- Seleccionar Coach --</option>
@@ -49,6 +49,68 @@
                 <option value="{{ coach.id }}">{{ coach.nombre_completo }}</option>
                 {% endfor %}
             </select>
+        </div>
+        
+        <div>
+            <style>
+                .day-selector-label:hover .day-selector-bg:not(.day-selected) {
+                    border-color: rgba(213, 0, 249, 0.5) !important;
+                    background-color: rgba(213, 0, 249, 0.1) !important;
+                    color: white !important;
+                }
+                .day-selected {
+                    background-color: rgba(213, 0, 249, 0.2) !important;
+                    border-color: rgb(213, 0, 249) !important;
+                    color: white !important;
+                    box-shadow: 0 0 15px rgba(213, 0, 249, 0.3) !important;
+                }
+            </style>
+            <label class="block text-xs font-bold text-gray-500 mb-3 uppercase tracking-wide">Días de Entrenamiento *</label>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                <!-- 0=Lunes, 6=Domingo -->
+                <label class="relative block cursor-pointer day-selector-label">
+                    <input type="checkbox" style="display: none;" class="day-checkbox" value="0">
+                    <div class="day-selector-bg flex items-center justify-center p-3 rounded-xl border border-white/10 bg-black/40 transition-all text-gray-300 font-bold text-sm select-none">
+                        Lunes
+                    </div>
+                </label>
+                <label class="relative block cursor-pointer day-selector-label">
+                    <input type="checkbox" style="display: none;" class="day-checkbox" value="1">
+                    <div class="day-selector-bg flex items-center justify-center p-3 rounded-xl border border-white/10 bg-black/40 transition-all text-gray-300 font-bold text-sm select-none">
+                        Martes
+                    </div>
+                </label>
+                <label class="relative block cursor-pointer day-selector-label">
+                    <input type="checkbox" style="display: none;" class="day-checkbox" value="2">
+                    <div class="day-selector-bg flex items-center justify-center p-3 rounded-xl border border-white/10 bg-black/40 transition-all text-gray-300 font-bold text-sm select-none">
+                        Miércoles
+                    </div>
+                </label>
+                <label class="relative block cursor-pointer day-selector-label">
+                    <input type="checkbox" style="display: none;" class="day-checkbox" value="3">
+                    <div class="day-selector-bg flex items-center justify-center p-3 rounded-xl border border-white/10 bg-black/40 transition-all text-gray-300 font-bold text-sm select-none">
+                        Jueves
+                    </div>
+                </label>
+                <label class="relative block cursor-pointer day-selector-label">
+                    <input type="checkbox" style="display: none;" class="day-checkbox" value="4">
+                    <div class="day-selector-bg flex items-center justify-center p-3 rounded-xl border border-white/10 bg-black/40 transition-all text-gray-300 font-bold text-sm select-none">
+                        Viernes
+                    </div>
+                </label>
+                <label class="relative block cursor-pointer day-selector-label">
+                    <input type="checkbox" style="display: none;" class="day-checkbox" value="5">
+                    <div class="day-selector-bg flex items-center justify-center p-3 rounded-xl border border-white/10 bg-black/40 transition-all text-gray-300 font-bold text-sm select-none">
+                        Sábado
+                    </div>
+                </label>
+                <label class="relative block cursor-pointer day-selector-label">
+                    <input type="checkbox" style="display: none;" class="day-checkbox" value="6">
+                    <div class="day-selector-bg flex items-center justify-center p-3 rounded-xl border border-white/10 bg-black/40 transition-all text-gray-300 font-bold text-sm select-none">
+                        Domingo
+                    </div>
+                </label>
+            </div>
         </div>
     </div>
 
@@ -207,6 +269,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 routineData[i] = [];
             }
             
+            // Inicializar checkboxes de días activos
+            if (preloadedData.dias_activos && preloadedData.dias_activos.length > 0) {
+                const checkboxes = document.querySelectorAll('.day-checkbox');
+                checkboxes.forEach(cb => {
+                    if (preloadedData.dias_activos.includes(parseInt(cb.value))) {
+                        cb.checked = true;
+                        cb.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+            
             preloadedData.dias.forEach(d => {
                 if(routineData[d.semana]) {
                     routineData[d.semana].push({
@@ -337,6 +410,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // Lógica visual de los checkboxes de días
+    document.querySelectorAll('.day-checkbox').forEach(cb => {
+        cb.addEventListener('change', function() {
+            const bg = this.nextElementSibling;
+            if (this.checked) {
+                bg.classList.add('day-selected');
+            } else {
+                bg.classList.remove('day-selected');
+            }
+        });
+    });
+
     // Eventos Globales
     selectDuracion.addEventListener('change', (e) => {
         saveCurrentWeekState();
@@ -365,9 +450,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const nombre = document.getElementById('mesociclo-nombre').value.trim();
         const duracion = selectDuracion.value;
         const coach_id = document.getElementById('mesociclo-coach').value;
+        
+        // Obtener días activos
+        const dias_activos = [];
+        document.querySelectorAll('.day-checkbox:checked').forEach(cb => {
+            dias_activos.push(parseInt(cb.value));
+        });
 
         if (!nombre) {
             showError("El nombre del plan es obligatorio.");
+            return;
+        }
+        
+        if (dias_activos.length === 0) {
+            showError("Debe seleccionar al menos un día de entrenamiento en la semana.");
             return;
         }
 
@@ -425,6 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
             nombre: nombre,
             duracion: duracion,
             coach_id: coach_id || null,
+            dias_activos: dias_activos,
             dias: diasFlatData
         };
 
