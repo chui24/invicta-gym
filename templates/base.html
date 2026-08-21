@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Invicta Gym{% endblock %}</title>
     <!-- Tailwind CSS Output -->
-    <link rel="stylesheet" href="{% static 'css/tailwind_output.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tailwind_output.css' %}?v=1.1">
     <!-- Bootstrap Icons (se mantiene solo para la tipografía de íconos) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     {% block extra_css %}{% endblock %}
@@ -98,7 +98,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="{% static 'js/base.js' %}"></script>
+    <script src="{% static 'js/base.js' %}?v=1.1"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
