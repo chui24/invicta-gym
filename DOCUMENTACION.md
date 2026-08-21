@@ -163,3 +163,20 @@ Se desarrolló el módulo central de planificación de entrenamiento para que lo
     *   Se actualizó `rutina_cliente.html` siguiendo directrices de Glassmorphism oscuras y adaptadas de referencias premium (Stitch).
     *   Incorpora navegación horizontal de pestañas para ver el plan de la semana.
     *   El cliente puede visualizar el `peso sugerido` por el coach como placeholder, e interactuar con inputs directos para introducir su `peso levantado` real.
+
+### Fase 4: Arquitectura de Despliegue y Flujo de Trabajo (Pruebas Cloud)
+Esta fase preparó la infraestructura para el despliegue web real, sentando las bases de seguridad y control de versiones de cara a la salida a producción.
+*   **Proxy Inverso y Redes Docker:**
+    *   Implementación en VPS con un contenedor de Nginx que actúa como Reverse Proxy (`proxy_pass` hacia Django).
+    *   Resolución de enrutamiento asignando direcciones IPv4 estáticas (`172.20.0.10`) a la red externa `instances`.
+*   **Higiene y Entornos Separados (.env y Docker Compose):**
+    *   Integración de `python-dotenv` para desvincular secretos (Contraseñas, `SECRET_KEY`, Hosts) del código base.
+    *   Creación de un `.dockerignore` estricto para excluir directorios locales, artefactos de desarrollo y notas de memoria (`.md`) de la imagen de producción.
+    *   Adición de `docker-compose.prod.yml` que sobreescribe la configuración local omitiendo el volumen de desarrollo (`.:/app`), forzando la inmutabilidad de la imagen de Docker en entornos de test/producción.
+*   **Compatibilidad Segura de Django (HTTPS):**
+    *   Integración de `CSRF_TRUSTED_ORIGINS` para legitimar los envíos de formularios (`POST`) bajo el dominio proxy (`invictagym.online`).
+    *   Habilitación de `SECURE_PROXY_SSL_HEADER` que permite a Django reconocer e interpretar correctamente que el Nginx front-end está manejando el tráfico bajo HTTPS.
+*   **Estrategia Git Flow Simplificada:**
+    *   **`main`**: Producción limpia (Sellado para Septiembre).
+    *   **`test`**: Pruebas Cloud (Despliegue activo en el VPS para Q/A web).
+    *   **`develop`**: Rama base para desarrollo local (Donde co-habitan el Live Reload y scripts de pruebas locales).

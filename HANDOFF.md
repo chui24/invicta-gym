@@ -22,9 +22,10 @@ Si estás leyendo esto, acabas de ser inicializado en una nueva computadora para
 *   **Motor Biométrico de Inasistencias (Lookback Algorithm):** El endpoint `/api/validar_rostro/` determina exactamente qué "Día de Rutina" le corresponde al cliente cruzando fechas. Además, busca hasta 7 días atrás si el cliente se ausentó en una fecha agendada, disparando un **Badge de Alarma Naranja** instantáneo en el Dashboard de Recepción.
 *   **Lógica de Renderizado por Semana:** La vista del perfil de cliente (`rutina_cliente.html`) identifica la rutina, filtra dinámicamente los días según la semana seleccionada (por query parameter o default cronológico) y renderiza los ejercicios asignados con placeholders inteligentes de peso prescrito.
 
-### 3. Infraestructura y Estado del Repositorio
-*   **Entorno Dockerizado:** Totalmente configurado (`docker compose up --build -d`). 
-*   **Repositorio Limpio:** Listo para Git. Archivos residuales, scripts temporales, DB local SQLite o data local de PostgreSQL están debidamente omitidos en `.gitignore` para no ensuciar un entorno de producción o de otro desarrollador.
+### 3. Infraestructura y Estado del Repositorio (Fase 4 - Pruebas Cloud)
+*   **Entorno Dockerizado Local:** Totalmente configurado (`docker compose up --build -d`) para la rama de desarrollo.
+*   **Entorno Producción/VPS:** Se configuró Nginx como proxy inverso. Existe un `docker-compose.prod.yml` que elimina volúmenes montados localmente y asigna IPs para el proxy. Las credenciales seguras se leen mediante `.env` (python-dotenv) y se activó soporte HTTPS/Proxy y protección CSRF en Django (`settings.py`).
+*   **Git Flow & Repositorio Limpio:** Estrategia de 3 ramas (`main` para Septiembre, `test` activa en VPS, y `develop` para código local). El archivo `.dockerignore` aísla los artefactos y notas de este repositorio.
 *   **Comandos Personalizados:** `actualizar_bcv` y `limpiar_media`.
 
 ### 4. Siguientes Pasos (Roadmap de Desarrollo)
