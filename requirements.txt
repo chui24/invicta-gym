@@ -4,4 +4,6 @@ psycopg2-binary
 face_recognition
 opencv-python-headless
 numpy
-requests\nbeautifulsoup4
+requests
+beautifulsoup4
+python-dotenv

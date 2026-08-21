@@ -673,6 +673,15 @@ def rutina_crear(request, cliente_id):
         try:
             data = json.loads(request.body)
             with transaction.atomic():
+                if data.get('action') == 'delete':
+                    asignacion = AsignacionCliente.objects.filter(cliente=cliente).first()
+                    if asignacion:
+                        mesociclo = asignacion.mesociclo
+                        asignacion.delete()
+                        if mesociclo:
+                            mesociclo.delete()
+                    return JsonResponse({'status': 'success', 'message': 'Rutina eliminada correctamente'})
+
                 coach = None
                 if data.get('coach_id'):
                     coach = Personal.objects.filter(id=data['coach_id']).first()
@@ -785,14 +794,50 @@ def perfil_entrenamiento_cliente(request, cliente_id):
     fecha_inicio = asignacion.fecha_inicio
     hoy = timezone.localdate()
     
-    # Calcular semana cronológica actual (1-indexed) basada en la semana calendario
-    lunes_inicio = fecha_inicio - timedelta(days=fecha_inicio.weekday())
-    dias_pasados = (hoy - lunes_inicio).days
-    semana_cronologica = max(1, (dias_pasados // 7) + 1)
-    if semana_cronologica > mesociclo.duracion_semanas:
-        semana_cronologica = mesociclo.duracion_semanas
+    # Calcular progreso total y secuencia cronológica
+    dias_activos = asignacion.dias_activos or [0, 1, 2, 3, 4, 5, 6]
+    dias_activos = sorted([int(d) for d in dias_activos])
+    dias_por_semana = len(dias_activos)
+    if dias_por_semana == 0:
+        dias_por_semana = 7
         
-    # Obtener parámetros de la URL
+    total_dias_plan = mesociclo.duracion_semanas * dias_por_semana
+    fechas_entrenamiento = []
+    fecha_iter = fecha_inicio
+    
+    # Generar la secuencia cronológica exacta de todos los días de entrenamiento
+    while len(fechas_entrenamiento) < total_dias_plan:
+        if fecha_iter.weekday() in dias_activos:
+            fechas_entrenamiento.append(fecha_iter)
+        fecha_iter += timedelta(days=1)
+
+    dias_asistidos_totales = Asistencia.objects.filter(cliente=cliente, fecha_hora_entrada__date__gte=fecha_inicio).values('fecha_hora_entrada__date').distinct().count()
+    progreso_porcentaje = int((dias_asistidos_totales / total_dias_plan) * 100) if total_dias_plan > 0 else 0
+    progreso_porcentaje = min(100, progreso_porcentaje)
+    
+    # Calcular en qué semana/día de rutina estamos HOY
+    semana_cronologica = 1
+    dia_cronologico = 1
+    
+    if hoy in fechas_entrenamiento:
+        idx_hoy = fechas_entrenamiento.index(hoy)
+        semana_cronologica = (idx_hoy // dias_por_semana) + 1
+        dia_cronologico = (idx_hoy % dias_por_semana) + 1
+    elif hoy > fechas_entrenamiento[-1]:
+        semana_cronologica = mesociclo.duracion_semanas
+        dia_cronologico = dias_por_semana
+    elif hoy < fecha_inicio:
+        semana_cronologica = 1
+        dia_cronologico = 1
+    else:
+        # Hoy es un día de descanso en medio del plan, buscar el último día entrenado
+        pasados = [f for f in fechas_entrenamiento if f < hoy]
+        if pasados:
+            idx_pasado = len(pasados) - 1
+            semana_cronologica = (idx_pasado // dias_por_semana) + 1
+            dia_cronologico = (idx_pasado % dias_por_semana) + 1
+
+    # Parámetros URL
     semana_seleccionada = request.GET.get('semana')
     if semana_seleccionada and semana_seleccionada.isdigit():
         semana_seleccionada = int(semana_seleccionada)
@@ -803,55 +848,51 @@ def perfil_entrenamiento_cliente(request, cliente_id):
     if dia_seleccionado and dia_seleccionado.isdigit():
         dia_seleccionado = int(dia_seleccionado)
     else:
-        dia_seleccionado = hoy.weekday() + 1 # 1=Lunes, 7=Domingo
+        dia_seleccionado = dia_cronologico
         if semana_seleccionada != semana_cronologica:
-            dia_seleccionado = 1 # Si cambia de semana, mostrar Lunes por defecto
-
-    # Calcular progreso total
-    # Asumimos 5 días a la semana de entrenamiento en promedio.
-    dias_totales_plan = mesociclo.duracion_semanas * 5 
-    dias_asistidos_totales = Asistencia.objects.filter(cliente=cliente, fecha_hora_entrada__date__gte=fecha_inicio).values('fecha_hora_entrada__date').distinct().count()
-    progreso_porcentaje = int((dias_asistidos_totales / dias_totales_plan) * 100) if dias_totales_plan > 0 else 0
-    progreso_porcentaje = min(100, progreso_porcentaje)
-    
-    # Generar lista de semanas
+            dia_seleccionado = 1
+            
     rango_semanas = list(range(1, mesociclo.duracion_semanas + 1))
     
-    # Calcular fechas de la semana seleccionada
-    inicio_semana_seleccionada = lunes_inicio + timedelta(days=(semana_seleccionada - 1) * 7)
-    
-    # Asistencias de esa semana para la cuadrícula
-    asistencias_semana = Asistencia.objects.filter(
-        cliente=cliente,
-        fecha_hora_entrada__date__gte=inicio_semana_seleccionada,
-        fecha_hora_entrada__date__lte=inicio_semana_seleccionada + timedelta(days=6)
-    ).values_list('fecha_hora_entrada__date', flat=True)
-    dias_asistidos_semana = set(asistencias_semana)
+    # Fechas correspondientes a la semana seleccionada
+    start_idx = (semana_seleccionada - 1) * dias_por_semana
+    end_idx = min(start_idx + dias_por_semana, len(fechas_entrenamiento))
+    fechas_semana_seleccionada = fechas_entrenamiento[start_idx:end_idx]
 
-    # Cuadrícula de 7 días
+    # Asistencias de esa semana para la cuadrícula
+    dias_asistidos_semana = set()
+    if fechas_semana_seleccionada:
+        asistencias_semana = Asistencia.objects.filter(
+            cliente=cliente,
+            fecha_hora_entrada__date__in=fechas_semana_seleccionada
+        ).values_list('fecha_hora_entrada__date', flat=True)
+        dias_asistidos_semana = set(asistencias_semana)
+
+    # Construir cuadrícula cronológica dinámica (solo días activos)
     cuadricula = []
-    # Precargar todos los días de rutina del mesociclo para la semana seleccionada
     dias_rutina_obj = {d.numero_dia: d for d in DiaRutina.objects.filter(mesociclo=mesociclo, semana=semana_seleccionada)}
     
-    for i in range(7):
-        numero_dia = i + 1
-        fecha_dia = inicio_semana_seleccionada + timedelta(days=i)
+    for idx, fecha_dia in enumerate(fechas_semana_seleccionada):
+        numero_dia_rutina = idx + 1
         asistio = fecha_dia in dias_asistidos_semana
-        dia_r = dias_rutina_obj.get(numero_dia)
+        dia_r = dias_rutina_obj.get(numero_dia_rutina)
         enfoque = dia_r.enfoque if dia_r else 'Descanso'
         
         cuadricula.append({
-            'numero_dia': numero_dia,
+            'numero_dia': numero_dia_rutina,
             'fecha': fecha_dia,
             'es_hoy': fecha_dia == hoy,
             'asistio': asistio,
             'enfoque': enfoque,
-            'seleccionado': numero_dia == dia_seleccionado
+            'seleccionado': numero_dia_rutina == dia_seleccionado
         })
         
     # Ejercicios del día seleccionado
     dia_rutina_actual = dias_rutina_obj.get(dia_seleccionado)
-    fecha_seleccionada = inicio_semana_seleccionada + timedelta(days=dia_seleccionado - 1)
+    
+    fecha_seleccionada = hoy
+    if start_idx + (dia_seleccionado - 1) < len(fechas_entrenamiento):
+        fecha_seleccionada = fechas_entrenamiento[start_idx + (dia_seleccionado - 1)]
     
     ejercicios_con_progresion = []
     if dia_rutina_actual:

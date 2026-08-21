@@ -1,0 +1,22 @@
+services:
+  proxy:
+    image: nginx_certbot
+    restart: always
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./sites-available:/etc/nginx/sites-available
+      - ./sites-enabled:/etc/nginx/sites-enabled
+      - ./etc:/etc/letsencrypt
+      - ./www/certbot:/var/www/certbot
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      instances:
+        ipv4_address: 172.20.0.254
+
+networks:
+  instances:
+    name: instances
+    external: true

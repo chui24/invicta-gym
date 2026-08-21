@@ -5,16 +5,25 @@
 {% block content %}
 <div class="w-full max-w-5xl mx-auto pb-12" id="routine-builder-app">
     <!-- Encabezado -->
-    <div class="flex justify-between items-center mb-8 relative">
-        <a href="{% url 'rutina_cliente' cliente.id %}" class="text-gray-400 hover:text-white transition-colors flex items-center text-sm">
-            <i class="bi bi-arrow-left mr-2"></i> Cancelar
-        </a>
-        <h1 class="text-2xl md:text-3xl font-black text-white uppercase tracking-wider absolute left-1/2 transform -translate-x-1/2" style="text-shadow: 0 0 15px rgba(213,0,249,0.3);">
+    <div class="flex items-center mb-8">
+        <div class="flex-1 flex justify-start">
+            <a href="{% url 'rutina_cliente' cliente.id %}" class="bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 font-medium py-2 px-4 rounded-lg transition-colors flex items-center text-sm">
+                <i class="bi bi-arrow-left mr-2"></i> Cancelar
+            </a>
+        </div>
+        
+        <h1 class="text-2xl md:text-3xl font-black text-white uppercase tracking-wider text-center flex-none px-4" style="text-shadow: 0 0 15px rgba(213,0,249,0.3);">
             CONSTRUCTOR DE RUTINA
         </h1>
-        <button id="btn-save-routine" class="bg-brand-accent hover:brightness-110 text-white font-bold py-2.5 px-6 rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(213,0,249,0.4)] flex items-center text-sm">
-            <i class="bi bi-save mr-2"></i> Guardar Rutina
-        </button>
+        
+        <div class="flex-1 flex gap-3 justify-end">
+            <button id="btn-delete-routine" class="hidden bg-white/5 border border-white/10 hover:bg-red-500/20 hover:border-red-500/30 text-gray-400 hover:text-red-500 font-medium py-2 px-4 rounded-lg transition-all duration-300 flex items-center text-sm">
+                <i class="bi bi-trash mr-2"></i> Eliminar
+            </button>
+            <button id="btn-save-routine" class="bg-brand-accent hover:brightness-110 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(213,0,249,0.4)] flex items-center text-sm whitespace-nowrap">
+                <i class="bi bi-save mr-2"></i> Guardar Rutina
+            </button>
+        </div>
     </div>
 
     <div id="error-alert" class="hidden mb-6 bg-red-500/20 border border-red-500 text-red-100 px-4 py-3 rounded-lg flex items-center gap-3">
@@ -134,6 +143,27 @@
             <!-- Días inyectados aquí vía JS para la semana activa -->
         </div>
     </div>
+
+    <!-- Modal Confirmación Eliminar Rutina -->
+    <div id="modal-delete-routine" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-gray-900 border border-red-500/30 p-8 rounded-2xl max-w-md w-full mx-4 shadow-[0_0_30px_rgba(239,68,68,0.2)] transform scale-95 transition-transform duration-300">
+            <div class="flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-6">
+                    <i class="bi bi-exclamation-triangle text-3xl text-red-500"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">¿Eliminar Rutina?</h3>
+                <p class="text-gray-400 mb-8">Estás a punto de eliminar esta rutina por completo. Esta acción no se puede deshacer y se borrarán todos los días y ejercicios configurados.</p>
+                <div class="flex gap-4 w-full">
+                    <button id="btn-cancel-delete" class="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-3 px-4 rounded-xl transition-colors">
+                        Cancelar
+                    </button>
+                    <button id="btn-confirm-delete" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-[0_0_15px_rgba(239,68,68,0.4)]">
+                        Sí, Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Template para Pestaña de Semana -->
@@ -215,7 +245,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // ESTADO DE LA APLICACIÓN
-    // Estructura: routineData = { 1: [ { id: 'd1', enfoque: '', ejercicios: [ {id: 'e1', nombre: '', detalles: ''} ] } ], 2: [] }
     let routineData = {};
     let activeWeek = 1;
     let durationWeeks = 12;
@@ -237,13 +266,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const weeksTabsContainer = document.getElementById('weeks-tabs');
     const btnAddDay = document.getElementById('btn-add-day');
     const btnSaveRoutine = document.getElementById('btn-save-routine');
+    const btnDeleteRoutine = document.getElementById('btn-delete-routine');
     const selectDuracion = document.getElementById('mesociclo-duracion');
+
+    const modalDelete = document.getElementById('modal-delete-routine');
+    const btnCancelDelete = document.getElementById('btn-cancel-delete');
+    const btnConfirmDelete = document.getElementById('btn-confirm-delete');
 
     const templateWeekTab = document.getElementById('template-week-tab').innerHTML;
     const templateDay = document.getElementById('template-day').innerHTML;
     const templateExercise = document.getElementById('template-exercise').innerHTML;
 
-    // Utilidades
     const generateId = () => Math.random().toString(36).substr(2, 9);
     
     const showError = (msg) => {
@@ -257,10 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('error-alert').classList.add('hidden');
     };
 
-    // --- INICIALIZACIÓN ---
     const initRoutineData = () => {
         if (preloadedData && Object.keys(routineData).length === 0) {
-            // Inicializar con datos existentes
             document.getElementById('mesociclo-nombre').value = preloadedData.nombre;
             document.getElementById('mesociclo-duracion').value = preloadedData.duracion;
             document.getElementById('mesociclo-coach').value = preloadedData.coach_id;
@@ -269,7 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 routineData[i] = [];
             }
             
-            // Inicializar checkboxes de días activos
             if (preloadedData.dias_activos && preloadedData.dias_activos.length > 0) {
                 const checkboxes = document.querySelectorAll('.day-checkbox');
                 checkboxes.forEach(cb => {
@@ -281,24 +311,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             preloadedData.dias.forEach(d => {
-                if(routineData[d.semana]) {
-                    routineData[d.semana].push({
-                        id: d.id,
-                        enfoque: d.enfoque,
-                        ejercicios: d.ejercicios
-                    });
-                }
+                if (!routineData[d.semana]) routineData[d.semana] = [];
+                routineData[d.semana].push({
+                    id: d.id,
+                    enfoque: d.enfoque,
+                    ejercicios: d.ejercicios.map(e => ({
+                        id: e.id,
+                        nombre: e.nombre,
+                        series: e.series,
+                        detalles: e.detalles,
+                        peso: e.peso
+                    }))
+                });
             });
-            // Una vez cargados, limpiamos preloaded para que los cambios de dropdown funcionen normal
+            
+            btnDeleteRoutine.classList.remove('hidden');
             preloadedData = null;
         } else {
-            // Asegurar que todas las semanas existan en el objeto
             for (let i = 1; i <= durationWeeks; i++) {
                 if (!routineData[i]) {
                     routineData[i] = [];
                 }
             }
-            // Limpiar semanas sobrantes si se reduce la duración
             Object.keys(routineData).forEach(key => {
                 if (parseInt(key) > durationWeeks) delete routineData[key];
             });
@@ -312,14 +346,13 @@ document.addEventListener('DOMContentLoaded', () => {
             weeksTabsContainer.insertAdjacentHTML('beforeend', tabHtml);
             const btn = weeksTabsContainer.lastElementChild;
             
-            // Estilo Activo
             if (i === activeWeek) {
                 btn.classList.remove('bg-black/40', 'text-gray-400');
                 btn.classList.add('bg-brand-accent', 'text-white', 'shadow-[0_0_10px_rgba(213,0,249,0.5)]');
             }
             
             btn.addEventListener('click', () => {
-                saveCurrentWeekState(); // Guardar lo que el usuario escribió
+                saveCurrentWeekState();
                 activeWeek = i;
                 renderWeekTabs();
                 renderActiveWeekDays();
@@ -331,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!routineData[activeWeek]) return;
         
         const dayCards = daysContainer.querySelectorAll('.day-card');
-        routineData[activeWeek] = []; // Resetear para leer todo nuevo
+        routineData[activeWeek] = [];
         
         dayCards.forEach(card => {
             const dayId = card.getAttribute('data-day-id');
@@ -360,7 +393,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const days = routineData[activeWeek] || [];
         
         if (days.length === 0) {
-            // Si está vacío, le regalamos un día por defecto
             const defaultDay = { id: generateId(), enfoque: '', ejercicios: [ {nombre: '', series: '', detalles: '', peso: ''} ] };
             routineData[activeWeek].push(defaultDay);
             days.push(defaultDay);
@@ -374,7 +406,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const newCard = daysContainer.lastElementChild;
             newCard.querySelector('.day-enfoque').value = day.enfoque;
             
-            // Llenar ejercicios
             const tbody = newCard.querySelector('.exercises-tbody');
             day.ejercicios.forEach(ej => {
                 tbody.insertAdjacentHTML('beforeend', templateExercise);
@@ -384,14 +415,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 newRow.querySelector('.exercise-details').value = ej.detalles || '';
                 newRow.querySelector('.exercise-peso').value = ej.peso || '';
                 
-                // Evento eliminar ejercicio
                 newRow.querySelector('.btn-remove-exercise').addEventListener('click', () => {
                     newRow.remove();
                     saveCurrentWeekState();
                 });
             });
 
-            // Evento añadir ejercicio
             newCard.querySelector('.btn-add-exercise').addEventListener('click', () => {
                 tbody.insertAdjacentHTML('beforeend', templateExercise);
                 const freshRow = tbody.lastElementChild;
@@ -401,16 +430,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
 
-            // Evento eliminar día
             newCard.querySelector('.btn-remove-day').addEventListener('click', () => {
                 newCard.remove();
                 saveCurrentWeekState();
-                renderActiveWeekDays(); // Re-render para reenumerar
+                renderActiveWeekDays();
             });
         });
     };
 
-    // Lógica visual de los checkboxes de días
     document.querySelectorAll('.day-checkbox').forEach(cb => {
         cb.addEventListener('change', function() {
             const bg = this.nextElementSibling;
@@ -422,7 +449,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Eventos Globales
     selectDuracion.addEventListener('change', (e) => {
         saveCurrentWeekState();
         durationWeeks = parseInt(e.target.value);
@@ -432,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderActiveWeekDays();
     });
 
-        btnAddDay.addEventListener('click', () => {
+    btnAddDay.addEventListener('click', () => {
         saveCurrentWeekState();
         routineData[activeWeek].push({
             id: generateId(),
@@ -442,7 +468,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderActiveWeekDays();
     });
 
-    // Guardar Rutina
     btnSaveRoutine.addEventListener('click', async () => {
         hideError();
         saveCurrentWeekState(); 
@@ -451,7 +476,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const duracion = selectDuracion.value;
         const coach_id = document.getElementById('mesociclo-coach').value;
         
-        // Obtener días activos
         const dias_activos = [];
         document.querySelectorAll('.day-checkbox:checked').forEach(cb => {
             dias_activos.push(parseInt(cb.value));
@@ -470,9 +494,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let diasFlatData = [];
         let hasErrors = false;
 
-        // Validar y aplanar datos
         for (let semana = 1; semana <= durationWeeks; semana++) {
             const diasSemana = routineData[semana] || [];
+            
+            if (diasSemana.length !== dias_activos.length) {
+                hasErrors = true;
+                showError(`Has seleccionado ${dias_activos.length} días de entrenamiento por semana, pero la Semana ${semana} tiene ${diasSemana.length} día(s) configurado(s). Usa el botón "+ Añadir Día a la Semana" para que coincidan.`);
+                return;
+            }
             
             diasSemana.forEach((dia, idx) => {
                 const numero = idx + 1;
@@ -550,13 +579,69 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnSaveRoutine.disabled = false;
             }
         } catch (error) {
-            showError("Hubo un error de conexión al intentar guardar.");
-            btnSaveRoutine.innerHTML = originalBtnText;
+            btnSaveRoutine.innerHTML = '<i class="bi bi-save mr-2"></i> Guardar Rutina';
             btnSaveRoutine.disabled = false;
+            showError("Hubo un error de conexión al intentar guardar.");
         }
     });
 
-    // Boot
+    const showDeleteModal = () => {
+        modalDelete.classList.remove('hidden');
+        void modalDelete.offsetWidth;
+        modalDelete.classList.remove('opacity-0');
+        modalDelete.querySelector('.bg-gray-900').classList.remove('scale-95');
+    };
+
+    const hideDeleteModal = () => {
+        modalDelete.classList.add('opacity-0');
+        modalDelete.querySelector('.bg-gray-900').classList.add('scale-95');
+        setTimeout(() => {
+            modalDelete.classList.add('hidden');
+        }, 300);
+    };
+
+    btnDeleteRoutine.addEventListener('click', () => {
+        showDeleteModal();
+    });
+
+    btnCancelDelete.addEventListener('click', () => {
+        hideDeleteModal();
+    });
+
+    btnConfirmDelete.addEventListener('click', async () => {
+        hideDeleteModal();
+
+        const originalText = btnDeleteRoutine.innerHTML;
+        btnDeleteRoutine.innerHTML = '<i class="bi bi-hourglass-split mr-2 animate-spin"></i> Eliminando...';
+        btnDeleteRoutine.disabled = true;
+
+        try {
+            const csrfToken = document.getElementById('csrf-token').value;
+            const response = await fetch("{% url 'rutina_crear' cliente.id %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ action: 'delete' })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.status === 'success') {
+                window.location.href = "{% url 'rutina_cliente' cliente.id %}";
+            } else {
+                showError(result.message || 'Error al eliminar la rutina.');
+                btnDeleteRoutine.innerHTML = originalText;
+                btnDeleteRoutine.disabled = false;
+            }
+        } catch (error) {
+            showError("Hubo un error de conexión al intentar eliminar.");
+            btnDeleteRoutine.innerHTML = originalText;
+            btnDeleteRoutine.disabled = false;
+        }
+    });
+
     initRoutineData();
     renderWeekTabs();
     renderActiveWeekDays();

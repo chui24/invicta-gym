@@ -1,12 +1,31 @@
-node_modules/
+# Git
+.git
+.gitignore
+
+# Entornos virtuales y Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+*.py[cod]
+*$py.class
 env/
 venv/
-.venv/
 .env
+
+# Base de datos local
 db.sqlite3
-.git/
+db.sqlite3-journal
+
+# Documentación y desarrollo
+*.md
+!README.md
+artifacts/
+scripts/
+nginx_vps/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Editores
+.vscode/
+.idea/
+.DS_Store
