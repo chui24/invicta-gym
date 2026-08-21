@@ -1,3 +1,5 @@
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 import base64
 import json
 import numpy as np
@@ -33,6 +35,7 @@ def get_face_encoding_from_base64(imgstr):
         print(f"Error procesando imagen para encoding: {e}")
     return None
 
+@login_required
 def validar_acceso_semaforo(request):
     """
     Vista (API) que recibe la cédula y devuelve el estado del cliente.
@@ -180,6 +183,7 @@ def validar_acceso_semaforo(request):
     
     return JsonResponse(data)
 
+@login_required
 def dashboard(request):
     hoy = timezone.now().date()
     
@@ -203,6 +207,7 @@ def dashboard(request):
     }
     return render(request, 'gym/dashboard.html', context)
 
+@login_required
 def cliente_crear(request):
     if request.method == 'POST':
         form = RegistroClienteForm(request.POST)
@@ -257,6 +262,7 @@ def cliente_crear(request):
         
     return render(request, 'gym/cliente_form.html', {'form': form})
 
+@login_required
 def renovar_suscripcion(request, cliente_id):
     cliente = get_object_or_404(Cliente, id=cliente_id)
     ultima_suscripcion = cliente.suscripciones.order_by('-fecha_vencimiento').first()
@@ -329,6 +335,7 @@ def renovar_suscripcion(request, cliente_id):
         'planes_data': json.dumps(planes_data)
     })
 
+@login_required
 def cliente_list(request):
     query = request.GET.get('q', '')
     estado = request.GET.get('estado', '')
@@ -381,6 +388,7 @@ def cliente_list(request):
             
     return render(request, 'gym/cliente_list.html', {'clientes': clientes_list, 'query': query})
 
+@login_required
 def cliente_editar(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     if request.method == 'POST':
@@ -399,6 +407,7 @@ def cliente_editar(request, pk):
         form = ClienteEditForm(instance=cliente)
     return render(request, 'gym/cliente_editar.html', {'form': form, 'cliente': cliente})
 
+@login_required
 def cliente_eliminar(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     if request.method == 'POST':
@@ -406,6 +415,7 @@ def cliente_eliminar(request, pk):
         return redirect('cliente_list')
     return render(request, 'gym/cliente_confirm_delete.html', {'cliente': cliente})
 
+@login_required
 def asistencia_list(request):
     hoy = timezone.now().date()
     asistencias = Asistencia.objects.filter(fecha_hora_entrada__date=hoy).order_by('-fecha_hora_entrada')
@@ -414,10 +424,12 @@ def asistencia_list(request):
 # ==========================================
 # GESTIÓN DE PLANES (CRUD)
 # ==========================================
+@login_required
 def plan_list(request):
     planes = Plan.objects.all().order_by('tarifa')
     return render(request, 'gym/plan_list.html', {'planes': planes})
 
+@login_required
 def plan_crear(request):
     if request.method == 'POST':
         form = PlanForm(request.POST)
@@ -428,6 +440,7 @@ def plan_crear(request):
         form = PlanForm()
     return render(request, 'gym/plan_form.html', {'form': form, 'titulo': 'Crear Nuevo Plan'})
 
+@login_required
 def plan_editar(request, pk):
     plan = get_object_or_404(Plan, pk=pk)
     if request.method == 'POST':
@@ -439,6 +452,7 @@ def plan_editar(request, pk):
         form = PlanForm(instance=plan)
     return render(request, 'gym/plan_form.html', {'form': form, 'titulo': 'Editar Plan'})
 
+@login_required
 def plan_eliminar(request, pk):
     plan = get_object_or_404(Plan, pk=pk)
     if request.method == 'POST':
@@ -449,10 +463,12 @@ def plan_eliminar(request, pk):
 # ==========================================
 # GESTIÓN DE PERSONAL (CRUD)
 # ==========================================
+@login_required
 def personal_list(request):
     personal = Personal.objects.all().order_by('cargo_especialidad', 'nombre_completo')
     return render(request, 'gym/personal_list.html', {'personal': personal})
 
+@login_required
 def personal_crear(request):
     if request.method == 'POST':
         form = PersonalForm(request.POST)
@@ -479,6 +495,7 @@ def personal_crear(request):
         form = PersonalForm()
     return render(request, 'gym/personal_form.html', {'form': form, 'titulo': 'Registrar Personal'})
 
+@login_required
 def personal_editar(request, pk):
     miembro = get_object_or_404(Personal, pk=pk)
     if request.method == 'POST':
@@ -506,6 +523,7 @@ def personal_editar(request, pk):
         form = PersonalForm(instance=miembro)
     return render(request, 'gym/personal_form.html', {'form': form, 'titulo': 'Editar Personal'})
 
+@login_required
 def personal_eliminar(request, pk):
     miembro = get_object_or_404(Personal, pk=pk)
     if request.method == 'POST':
@@ -516,6 +534,7 @@ def personal_eliminar(request, pk):
 from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
+@login_required
 def validar_rostro(request):
     if request.method == 'POST':
         try:
@@ -664,6 +683,7 @@ def validar_rostro(request):
             
     return JsonResponse({'status': 'invalid_method'})
 
+@login_required
 def rutina_crear(request, cliente_id):
     cliente = get_object_or_404(Cliente, id=cliente_id)
     
@@ -780,6 +800,7 @@ def rutina_crear(request, cliente_id):
 
 # --- FASE 3: RUTINAS Y PROGRESIÓN ---
 
+@login_required
 def perfil_entrenamiento_cliente(request, cliente_id):
     cliente = get_object_or_404(Cliente, id=cliente_id)
     asignacion = AsignacionCliente.objects.filter(cliente=cliente).order_by('-fecha_inicio').first()
@@ -917,6 +938,7 @@ def perfil_entrenamiento_cliente(request, cliente_id):
         'fecha_seleccionada': fecha_seleccionada
     })
 
+@login_required
 def guardar_peso_ajax(request):
     if request.method == 'POST':
         import json
@@ -953,3 +975,19 @@ def guardar_peso_ajax(request):
             return JsonResponse({'status': 'error', 'message': str(e)})
             
     return JsonResponse({'status': 'invalid_method'})
+
+
+@login_required
+def registro_admin(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_staff = True  # Otorgar permisos de administrador
+            user.save()
+            messages.success(request, 'Usuario administrador creado exitosamente.')
+            return redirect('dashboard')
+    else:
+        form = UserCreationForm()
+    
+    return render(request, 'registration/registro.html', {'form': form})

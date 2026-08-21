@@ -187,23 +187,11 @@
             </button>
         </div>
 
-        <!-- Tabla de Ejercicios -->
+        <!-- Lista de Ejercicios -->
         <div class="p-4">
-            <table class="w-full text-left mb-2">
-                <thead>
-                    <tr>
-                        <th class="py-2 px-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest w-10">#</th>
-                        <th class="py-2 px-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest">Ejercicio</th>
-                        <th class="py-2 px-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest w-24">Series</th>
-                        <th class="py-2 px-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest w-24">Reps</th>
-                        <th class="py-2 px-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest w-32">Peso Sugerido</th>
-                        <th class="w-10"></th>
-                    </tr>
-                </thead>
-                <tbody class="exercises-tbody">
-                    <!-- Ejercicios -->
-                </tbody>
-            </table>
+            <div class="exercises-tbody flex flex-col gap-4">
+                <!-- Ejercicios -->
+            </div>
             
             <button type="button" class="btn-add-exercise text-sm text-brand-accent hover:text-white transition-colors flex items-center mt-2 px-3">
                 <i class="bi bi-plus-circle mr-2"></i> Añadir Ejercicio
@@ -214,30 +202,41 @@
 
 <!-- Template para un Ejercicio -->
 <template id="template-exercise">
-    <tr class="exercise-row group">
-        <td class="p-2">
-            <i class="bi bi-grip-vertical text-gray-600 cursor-grab"></i>
-        </td>
-        <td class="p-2">
-            <input type="text" class="exercise-name w-full bg-black/50 border border-white/5 text-gray-300 text-sm rounded-md px-3 py-2.5 focus:outline-none focus:border-brand-accent transition-colors" placeholder="Ej: Peso Muerto">
-        </td>
-        <td class="p-2">
-            <input type="text" class="exercise-series w-full bg-black/50 border border-white/5 text-gray-300 text-sm rounded-md px-3 py-2.5 focus:outline-none focus:border-brand-accent transition-colors text-center" placeholder="Ej: 4">
-        </td>
-        <td class="p-2">
-            <input type="text" class="exercise-details w-full bg-black/50 border border-white/5 text-gray-300 text-sm rounded-md px-3 py-2.5 focus:outline-none focus:border-brand-accent transition-colors text-center" placeholder="Ej: 10-12">
-        </td>
-        <td class="p-2">
-            <input type="text" class="exercise-peso w-full bg-black/50 border border-white/5 text-gray-300 text-sm rounded-md px-3 py-2.5 focus:outline-none focus:border-brand-accent transition-colors text-center" placeholder="Ej: 10kg">
-        </td>
-        <td class="p-2 text-center">
-            <button type="button" class="btn-remove-exercise text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+    <div class="exercise-row group bg-black/40 rounded-xl p-4 border border-white/5 relative">
+        <div class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-600 drag-handle cursor-grab px-2 py-4 z-20">
+            <i class="bi bi-grip-vertical"></i>
+        </div>
+        <div class="absolute right-2 top-2 z-20">
+            <button type="button" class="btn-remove-exercise text-gray-600 hover:text-red-500 transition-colors p-2">
                 <i class="bi bi-x-lg"></i>
             </button>
-        </td>
-    </tr>
+        </div>
+        
+        <div class="pl-8 pr-8 relative z-10">
+            <div class="mb-4">
+                <label class="text-[10px] text-gray-500 font-bold uppercase tracking-widest block mb-1">Ejercicio</label>
+                <input type="text" class="exercise-name w-full bg-black/50 border border-white/10 text-gray-300 text-sm font-medium rounded-lg px-3 py-2.5 focus:outline-none focus:border-brand-accent transition-colors" placeholder="Ej: Press Militar con Mancuernas">
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                    <label class="text-[10px] text-gray-500 font-bold uppercase tracking-widest block mb-1 text-center">Series</label>
+                    <input type="text" class="exercise-series w-full bg-black/50 border border-white/10 text-gray-300 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-brand-accent transition-colors text-center" placeholder="Ej: 4">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 font-bold uppercase tracking-widest block mb-1 text-center">Reps</label>
+                    <input type="text" class="exercise-details w-full bg-black/50 border border-white/10 text-gray-300 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-brand-accent transition-colors text-center" placeholder="Ej: 12">
+                </div>
+            </div>
+            <div>
+                <label class="text-[10px] text-gray-500 font-bold uppercase tracking-widest block mb-1 text-center">Peso Sugerido</label>
+                <input type="text" class="exercise-peso w-full bg-black/50 border border-white/10 text-gray-300 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-brand-accent transition-colors text-center" placeholder="Ej: 10kg o Al fallo">
+            </div>
+        </div>
+    </div>
 </template>
 
+<!-- SortableJS -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 {% endblock %}
 
@@ -435,6 +434,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveCurrentWeekState();
                 renderActiveWeekDays();
             });
+
+            // Initialize SortableJS
+            if (typeof Sortable !== 'undefined') {
+                Sortable.create(tbody, {
+                    handle: '.drag-handle',
+                    animation: 150,
+                    ghostClass: 'opacity-30',
+                    onEnd: function() {
+                        saveCurrentWeekState();
+                    }
+                });
+            } else {
+                console.error('SortableJS no está cargado');
+            }
         });
     };
 

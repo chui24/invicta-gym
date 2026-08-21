@@ -181,29 +181,6 @@ function mostrarPerfil(data) {
     }
 }
 
-// Funcionalidad del Reloj en Vivo
-function actualizarReloj() {
-    const ahora = new Date();
-    const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    let fechaTexto = ahora.toLocaleDateString('es-ES', opcionesFecha);
-    fechaTexto = fechaTexto.charAt(0).toUpperCase() + fechaTexto.slice(1);
-    
-    let horas = ahora.getHours();
-    let minutos = ahora.getMinutes();
-    let segundos = ahora.getSeconds();
-    const ampm = horas >= 12 ? 'PM' : 'AM';
-    
-    horas = horas % 12;
-    horas = horas ? horas : 12;
-    minutos = minutos < 10 ? '0' + minutos : minutos;
-    segundos = segundos < 10 ? '0' + segundos : segundos;
-    
-    document.getElementById('live_date').textContent = fechaTexto;
-    document.getElementById('live_time').textContent = horas + ':' + minutos + ':' + segundos + ' ' + ampm;
-}
-
-setInterval(actualizarReloj, 1000);
-actualizarReloj();
 
 // --- Lógica del Escáner Facial (Backend) ---
 const btnEscaner = document.getElementById('btn_escaner_facial');

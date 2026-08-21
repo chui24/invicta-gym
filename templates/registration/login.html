@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | Invicta Gym</title>
+    <!-- Tailwind CSS Output -->
+    <link rel="stylesheet" href="{% static 'css/tailwind_output.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-b from-[#110f14] to-[#0a090b] text-white font-sans min-h-screen flex flex-col relative overflow-hidden">
+    
+    <!-- Navbar Superior Login -->
+    <div class="absolute top-0 w-full p-6 flex justify-between items-center z-10">
+        <div class="text-3xl font-black tracking-widest text-[#d1d1d1]" style="text-shadow: 0 0 10px rgba(213, 0, 249, 0.4);">
+            INVICTA
+        </div>
+        <div class="flex gap-4 text-gray-400">
+            <i class="bi bi-question-circle hover:text-white cursor-pointer transition-colors"></i>
+            <i class="bi bi-moon hover:text-white cursor-pointer transition-colors"></i>
+        </div>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="flex-grow flex items-center justify-center p-4 z-10">
+        <div class="bg-[#18181b]/80 backdrop-blur-xl border border-gray-800 rounded-2xl w-full max-w-md p-8 shadow-2xl">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold mb-2">Bienvenido de nuevo</h1>
+                <p class="text-gray-400 text-sm">Ingresa tus credenciales para continuar</p>
+            </div>
+
+            {% if form.errors %}
+                <div class="bg-red-500/10 border border-red-500/50 text-red-500 px-4 py-3 rounded mb-6 text-sm flex items-center gap-2">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Usuario o contraseña incorrectos.
+                </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                
+                <div class="mb-5 relative group">
+                    <label for="id_username" class="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">Email / Usuario</label>
+                    <div class="relative">
+                        <input type="text" name="username" id="id_username" required
+                               class="w-full bg-[#09090b] border border-gray-700 text-white rounded-lg p-3 pr-10 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-[0_0_15px_rgba(168,85,247,0.0)] focus:shadow-[0_0_15px_rgba(168,85,247,0.15)] placeholder-gray-600"
+                               placeholder="usuario@invicta.com">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500 group-focus-within:text-purple-400">
+                            <i class="bi bi-person"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6 relative group">
+                    <label for="id_password" class="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">Contraseña</label>
+                    <div class="relative">
+                        <input type="password" name="password" id="id_password" required
+                               class="w-full bg-[#09090b] border border-gray-700 text-white rounded-lg p-3 pr-10 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-[0_0_15px_rgba(168,85,247,0.0)] focus:shadow-[0_0_15px_rgba(168,85,247,0.15)] placeholder-gray-600"
+                               placeholder="••••••••">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer hover:text-gray-300" onclick="togglePassword()">
+                            <i class="bi bi-eye-slash" id="togglePasswordIcon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mb-8 text-sm">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" class="form-checkbox bg-[#09090b] border-gray-700 text-purple-600 rounded focus:ring-purple-500/50">
+                        <span class="ml-2 text-gray-400">Recordar sesión</span>
+                    </label>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">Olvidé mi contraseña</a>
+                </div>
+
+                <button type="submit" class="w-full bg-[#d500f9] hover:bg-[#e038ff] text-white font-bold py-3.5 px-4 rounded-lg transition-all shadow-[0_0_20px_rgba(213,0,249,0.4)] hover:shadow-[0_0_25px_rgba(213,0,249,0.6)] uppercase tracking-wider">
+                    Iniciar Sesión
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer Login -->
+    <div class="absolute bottom-0 w-full p-6 flex justify-between items-center text-xs text-gray-500 z-10">
+        <div>© 2024 INVICTA PERFORMANCE SYSTEMS</div>
+        <div class="flex gap-4">
+            <a href="#" class="hover:text-gray-300 transition-colors">Privacy Policy</a>
+            <a href="#" class="hover:text-gray-300 transition-colors">Terms of Service</a>
+            <a href="#" class="hover:text-gray-300 transition-colors">Contact Support</a>
+        </div>
+    </div>
+
+    <!-- Ambient Glow Background -->
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-900/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('id_password');
+            const icon = document.getElementById('togglePasswordIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            }
+        }
+    </script>
+</body>
+</html>
