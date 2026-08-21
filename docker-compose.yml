@@ -5,14 +5,17 @@ services:
     image: postgres:15-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: invicta_gym
-      POSTGRES_USER: ubuntu
-      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: ${DB_NAME:-invicta_gym}
+      POSTGRES_USER: ${DB_USER:-ubuntu}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mysecretpassword}
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5434:5432" # Changed host port to 5434 to avoid conflict with local postgres
+      - "5434:5432"
+    networks:
+      instances:
+        ipv4_address: 172.20.0.11
 
   web:
     build: .
@@ -20,27 +23,36 @@ services:
     command: >
       sh -c "python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
-    volumes:
-      - .:/app
+    volumes: []
     ports:
       - "8000:8000"
     environment:
-      - DEBUG=True
+      - DEBUG=${DEBUG:-False}
       - DB_HOST=db
-      - DB_NAME=invicta_gym
-      - DB_USER=ubuntu
-      - DB_PASSWORD=mysecretpassword
-      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-invicta_gym}
+      - DB_USER=${DB_USER:-ubuntu}
+      - DB_PASSWORD=${DB_PASSWORD:-mysecretpassword}
+      - DB_PORT=${DB_PORT:-5432}
     depends_on:
       - db
       - tailwind
+    networks:
+      instances:
+        ipv4_address: 172.20.0.10
 
   tailwind:
     image: node:20-alpine
     working_dir: /app
-    volumes:
-      - .:/app
+    volumes: []
     command: sh -c "npm install && npm run tailwind:watch"
+    networks:
+      instances:
+        ipv4_address: 172.20.0.12
 
 volumes:
   postgres_data:
+
+networks:
+  instances:
+    name: instances
+    external: true
