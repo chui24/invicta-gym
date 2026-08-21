@@ -30,7 +30,11 @@ Si estás leyendo esto, acabas de ser inicializado en una nueva computadora para
 
 ### 3. Infraestructura y Estado del Repositorio (Fase 4 - Pruebas Cloud)
 *   **Entorno Dockerizado Local:** Totalmente configurado (`docker compose up --build -d`) para la rama de desarrollo.
-*   **Entorno Producción/VPS:** Se configuró Nginx como proxy inverso. Existe un `docker-compose.prod.yml` que elimina volúmenes montados localmente y asigna IPs para el proxy. Las credenciales seguras se leen mediante `.env` (python-dotenv) y se activó soporte HTTPS/Proxy y protección CSRF en Django (`settings.py`).
+*   **Entorno Producción/VPS:** Se configuró Nginx como proxy inverso (con red externa `instances`). 
+    *   **Unificación de Docker:** En la rama `test`, se fusionó `docker-compose.prod.yml` en un único `docker-compose.yml` maestro que elimina los volúmenes (`volumes: []`), obliga a reconstruir la imagen para aplicar cambios (`--build`), e inyecta explícitamente variables desde `.env`.
+    *   **Seguridad y Variables:** Las credenciales seguras se leen mediante `.env`. Se mejoró la robustez de `settings.py` para ignorar espacios en blanco en `ALLOWED_HOSTS` y `CSRF_TRUSTED_ORIGINS`.
+    *   **Certificados y Cámara:** Se aplicó SSL oficial vía Certbot para habilitar el uso seguro y nativo de `navigator.mediaDevices.getUserMedia` (Cámara Web) sin errores `NotAllowedError`.
+    *   **Cache Busting:** Se añadieron parámetros de versión (`?v=1.1`) a `base.js` y `tailwind_output.css` en `base.html` para evadir el caché rancio de los navegadores móviles sin requerir "Hard Refresh".
 *   **Git Flow & Repositorio Limpio:** Estrategia de 3 ramas (`main` para Septiembre, `test` activa en VPS, y `develop` para código local). El archivo `.dockerignore` aísla los artefactos y notas de este repositorio.
 *   **Comandos Personalizados:** `actualizar_bcv` y `limpiar_media`.
 
