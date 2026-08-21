@@ -6,12 +6,12 @@
 <div class="w-full max-w-6xl mx-auto pb-12">
     <!-- Encabezado y Navegación Básica -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <a href="{% url 'cliente_list' %}" class="bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium py-2 px-4 rounded-full transition-all duration-300 border border-white/10 flex items-center mb-4 md:mb-0">
+        <a href="{% url 'cliente_list' %}" class="bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium py-2 px-4 rounded-full transition-all duration-300 border border-white/10 flex items-center mb-4 md:mb-0 w-full md:w-auto justify-center">
             <i class="bi bi-arrow-left mr-2"></i> Volver a Clientes
         </a>
         
         {% if mesociclo %}
-        <a href="{% url 'rutina_crear' cliente.id %}" class="bg-brand-accent hover:brightness-110 text-white text-sm font-bold py-2 px-5 rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(213,0,249,0.4)] flex items-center">
+        <a href="{% url 'rutina_crear' cliente.id %}" class="bg-brand-accent hover:brightness-110 text-white text-sm font-bold py-2 px-5 rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(213,0,249,0.4)] flex items-center w-full md:w-auto justify-center">
             <i class="bi bi-pencil-fill mr-2"></i> Editar Rutina
         </a>
         {% endif %}
@@ -62,7 +62,7 @@
     </div>
 
     <!-- Cuadrícula Semanal -->
-    <div class="grid grid-cols-2 md:grid-cols-7 gap-4 mb-12">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-12">
         {% for dia in cuadricula %}
             <a href="?semana={{ semana_seleccionada }}&dia={{ dia.numero_dia }}" class="block rounded-2xl p-5 flex flex-col items-center justify-center text-center transition-all duration-300 border
                 {% if dia.seleccionado %}
@@ -99,39 +99,37 @@
             </h3>
         </div>
 
-        <div class="bg-black/30 backdrop-blur-md rounded-2xl border border-white/5 overflow-hidden shadow-lg p-2 md:p-8">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b border-white/10">
-                            <th class="p-5 text-sm text-gray-500 font-black uppercase tracking-widest">Ejercicio</th>
-                            <th class="p-5 text-sm text-gray-500 font-black uppercase tracking-widest">Series</th>
-                            <th class="p-5 text-sm text-gray-500 font-black uppercase tracking-widest">Repeticiones</th>
-                            <th class="p-5 text-sm text-gray-500 font-black uppercase tracking-widest w-64 text-right">Peso (Registrado)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in ejercicios_con_progresion %}
-                        <tr class="border-b border-white/5 hover:bg-white/5 transition-colors group">
-                            <td class="p-5 text-white text-base font-bold">{{ item.ejercicio.nombre_ejercicio }}</td>
-                            <td class="p-5 text-gray-400 text-base font-medium">{{ item.ejercicio.series }}</td>
-                            <td class="p-5 text-gray-400 text-base font-medium">{{ item.ejercicio.repeticiones }}</td>
-                            <td class="p-5 text-right">
-                                <input type="text" 
-                                       class="w-full md:w-56 bg-black/60 border border-white/10 text-white text-base font-medium rounded-xl px-5 py-3 focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all duration-300 placeholder-gray-600 peso-input text-right" 
-                                       placeholder="{{ item.ejercicio.peso_asignado|default:'Ej: 10kg, 6 placas...' }}" 
-                                       data-ejercicio-id="{{ item.ejercicio.id }}"
-                                       value="{{ item.peso_registrado }}">
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" class="p-12 text-center text-gray-500">No hay ejercicios registrados para este día.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <div class="grid grid-cols-1 gap-4">
+            {% for item in ejercicios_con_progresion %}
+            <div class="bg-black/30 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden shadow-lg hover:shadow-[0_0_20px_rgba(213,0,249,0.15)] transition-all">
+                <div class="bg-brand-accent/5 p-4 border-b border-white/5">
+                    <h4 class="text-white text-lg font-bold">{{ item.ejercicio.nombre_ejercicio }}</h4>
+                </div>
+                <div class="p-4 flex flex-col gap-4">
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                        <div class="bg-black/40 rounded-lg p-2 border border-white/5">
+                            <span class="block text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Series</span>
+                            <span class="text-white font-medium">{{ item.ejercicio.series }}</span>
+                        </div>
+                        <div class="bg-black/40 rounded-lg p-2 border border-white/5">
+                            <span class="block text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Repeticiones</span>
+                            <span class="text-white font-medium">{{ item.ejercicio.repeticiones }}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <input type="text" 
+                               class="w-full bg-black/60 border border-white/10 text-white text-base font-medium rounded-xl px-4 py-3 focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all duration-300 placeholder-gray-600 peso-input text-center" 
+                               placeholder="Registro (ej: 10kg)" 
+                               data-ejercicio-id="{{ item.ejercicio.id }}"
+                               value="{{ item.peso_registrado }}">
+                    </div>
+                </div>
             </div>
+            {% empty %}
+            <div class="p-12 text-center text-gray-500 bg-black/30 rounded-2xl border border-white/5">
+                No hay ejercicios registrados para este día.
+            </div>
+            {% endfor %}
         </div>
         
         <p class="text-xs text-gray-500 mt-6 text-center font-medium"><i class="bi bi-info-circle mr-1"></i> Los pesos se guardan automáticamente al dejar de escribir.</p>

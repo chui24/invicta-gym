@@ -62,7 +62,7 @@
                         <h5 class="mb-6 text-brand-muted font-bold text-lg uppercase tracking-wider"><i class="bi bi-camera-fill mr-2"></i> Actualizar Fotografía</h5>
                         
                         <div class="text-center">
-                            <div class="camera-box mb-6 shadow-[0_0_15px_rgba(213,0,249,0.2)] border-2 border-brand-accent/50 rounded-xl overflow-hidden bg-black/40 relative mx-auto" style="width: 320px; height: 240px; display: flex; align-items: center; justify-content: center;">
+                            <div class="camera-box mb-6 shadow-[0_0_15px_rgba(213,0,249,0.2)] border-2 border-brand-accent/50 rounded-xl overflow-hidden bg-black/40 relative mx-auto w-full max-w-sm aspect-[4/3]" style="display: flex; align-items: center; justify-content: center;">
                                 {% if cliente.foto_perfil %}
                                 <img id="fotoActual" src="{{ cliente.foto_perfil.url }}" class="w-full h-full object-cover">
                                 {% endif %}
